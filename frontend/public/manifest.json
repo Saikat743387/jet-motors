@@ -1,0 +1,17 @@
+{
+  "name": "JET MOTORS",
+  "short_name": "JET MOTORS",
+  "description": "JET MOTORS — Premium automotive plans and services.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F3EE",
+  "theme_color": "#8B1E1E",
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
