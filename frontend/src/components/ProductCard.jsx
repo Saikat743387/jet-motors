@@ -1,31 +1,44 @@
 import { useNavigate } from 'react-router-dom';
-import { inr, assetUrl } from '../utils/format';
+import { inr } from '../utils/format';
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
 
   return (
     <article className="premium-card overflow-hidden rounded-2xl">
-      <div className="relative h-36 bg-parchment">
+      <div className="relative h-24 bg-parchment">
         <img
-          src={assetUrl(product.image)}
+          src="/products/car.jpg"
           alt={product.name}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#2c241c]/70 to-transparent px-4 py-3">
-          <h3 className="font-display text-2xl text-white">{product.name}</h3>
+        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+          <svg
+            className="h-3 w-3"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Verified
+        </span>
+      </div>
+      <div className="px-4 py-4">
+        <h3 className="font-display text-xl text-ink">{product.name}</h3>
+        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+          <Meta label="Duration" value={`${product.durationDays} Days`} />
+          <Meta label="Daily Income" value={inr(product.dailyIncome)} />
+          <Meta label="Total Income" value={inr(product.totalIncome)} />
+          <Meta label="Price" value={inr(product.price)} />
         </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3 px-4 py-4 text-sm">
-        <Meta label="Duration" value={`${product.durationDays} Days`} />
-        <Meta label="Daily Income" value={inr(product.dailyIncome)} />
-        <Meta label="Total Income" value={inr(product.totalIncome)} />
-        <Meta label="Price" value={inr(product.price)} />
-      </div>
-      <div className="px-4 pb-4">
         <button
           type="button"
-          className="btn-primary w-full rounded-xl py-2.5 text-sm font-semibold tracking-wide"
+          className="btn-primary mt-4 w-full rounded-xl py-2 text-sm font-semibold tracking-wide"
           onClick={() => navigate(`/deposit?productId=${product._id}`)}
         >
           BUY
