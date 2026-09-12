@@ -103,10 +103,12 @@ export default function Deposit() {
             onChange={(e) => setAmount(e.target.value)}
           />
         ) : null}
-        <div className="mt-5 rounded-xl bg-parchment px-4 py-3">
-          <p className="text-xs uppercase tracking-wider text-muted">Selected Amount</p>
-          <p className="font-display text-3xl">{inr(amount || 0)}</p>
-        </div>
+        {other ? (
+          <div className="mt-5 rounded-xl bg-parchment px-4 py-3">
+            <p className="text-xs uppercase tracking-wider text-muted">Selected Amount</p>
+            <p className="font-display text-3xl">{inr(amount || 0)}</p>
+          </div>
+        ) : null}
         <button
           type="button"
           disabled={loading}

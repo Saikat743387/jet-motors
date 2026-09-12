@@ -9,6 +9,9 @@ import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { connectDb } from './config/db.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { ApiError } from './utils/apiError.js';
+import { asyncHandler } from './utils/asyncHandler.js';
+import { findImage, imageStream } from './utils/uploads.js';
 import authRoutes from './routes/auth.routes.js';
 import productRoutes from './routes/product.routes.js';
 import depositRoutes from './routes/deposit.routes.js';
@@ -43,10 +46,22 @@ app.use(
     max: 120,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.path === '/api/health',
   })
 );
 
 app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
+
+app.get(
+  '/uploads/:filename',
+  asyncHandler(async (req, res) => {
+    const file = await findImage(req.params.filename);
+    if (!file) throw new ApiError(404, 'Image not found');
+    res.setHeader('Content-Type', file.contentType || 'application/octet-stream');
+    res.setHeader('Content-Length', String(file.length));
+    imageStream(req.params.filename).pipe(res);
+  })
+);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, name: 'JET MOTORS' }));
 app.get('/api/settings', publicSettings);

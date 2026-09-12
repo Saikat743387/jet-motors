@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { User } from '../models/User.js';
+import { Counter } from '../models/Counter.js';
 
 export function randomCode(length = 8) {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -15,9 +16,31 @@ export function publicId(prefix, n, width = 6) {
   return `${prefix}${String(n).padStart(width, '0')}`;
 }
 
+const USER_ID_COUNTER = 'userId';
+
+function userIdNumber(userId) {
+  const n = Number(String(userId || '').replace(/\D/g, ''));
+  return Number.isFinite(n) ? n : 0;
+}
+
+async function ensureUserIdCounter() {
+  if (await Counter.exists({ _id: USER_ID_COUNTER })) return;
+  const latest = await User.findOne().sort({ userId: -1 }).select('userId');
+  await Counter.updateOne(
+    { _id: USER_ID_COUNTER },
+    { $setOnInsert: { seq: latest ? userIdNumber(latest.userId) : 0 } },
+    { upsert: true }
+  );
+}
+
 export async function nextUserId() {
-  const count = await User.countDocuments();
-  return publicId('JM', count + 1);
+  await ensureUserIdCounter();
+  const counter = await Counter.findOneAndUpdate(
+    { _id: USER_ID_COUNTER },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  return publicId('JM', counter.seq);
 }
 
 export async function uniqueInviteCode() {

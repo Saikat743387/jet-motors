@@ -60,12 +60,14 @@ export async function registerUser({ mobile, password, confirmPassword, inviteCo
   if (existing) throw new ApiError(409, 'Mobile number is already registered');
 
   let referrer = null;
-  if (inviteCode) {
-    referrer = await User.findOne({ inviteCode: inviteCode.trim().toUpperCase() });
-    if (!referrer) throw new ApiError(400, 'Invalid invite code');
-    if (referrer.status === 'blocked') throw new ApiError(400, 'Invite code is not valid');
+  if (inviteCode && inviteCode.trim()) {
+    const trimmedCode = inviteCode.trim().toUpperCase();
+    referrer = await User.findOne({ inviteCode: trimmedCode });
+    if (!referrer) throw new ApiError(400, 'Invalid referral code');
+    if (referrer.status === 'blocked') throw new ApiError(400, 'Referral code is not valid');
+    if (referrer.mobile === mobile) throw new ApiError(400, 'You cannot refer yourself');
   } else if (settings.inviteRequired) {
-    throw new ApiError(400, 'Invite code is required');
+    throw new ApiError(400, 'Referral code is required');
   }
 
   const session = await mongoose.startSession();

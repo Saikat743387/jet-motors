@@ -36,5 +36,6 @@ export function statusClass(status) {
 }
 
 export function assetUrl(path) {
+  if (typeof path === 'string' && path.trim()) return path;
   return '/products/car.jpg';
 }

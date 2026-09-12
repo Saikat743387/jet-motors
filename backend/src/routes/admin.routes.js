@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 import { adminOnly, protect } from '../middleware/auth.js';
+import { saveImage } from '../utils/uploads.js';
 import {
   confirmDepositAdmin,
   createProduct,
@@ -29,17 +28,7 @@ import {
 } from '../controllers/admin.controller.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadDir = path.resolve(__dirname, '../../uploads');
-fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || '.jpg');
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -65,9 +54,12 @@ router.delete('/products/:id', deleteProduct);
 router.post(
   '/upload',
   upload.single('image'),
-  asyncHandler((req, res) => {
+  asyncHandler(async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-    res.json({ url: `/uploads/${req.file.filename}` });
+    const ext = path.extname(req.file.originalname || '.jpg');
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+    await saveImage(filename, req.file.mimetype, req.file.buffer);
+    res.json({ url: `/uploads/${filename}` });
   })
 );
 

@@ -29,6 +29,20 @@ npm run dev
 Frontend: http://localhost:5173  
 API: http://localhost:5000
 
+## Production environment variables
+
+The frontend reads `VITE_API_URL` (see `frontend/.env.example`). The backend
+reads `CLIENT_ORIGIN` for CORS (see `backend/.env.example` and `render.yaml`).
+For a Vercel-frontend + Render-backend deployment, configure:
+
+| Platform | Variable | Value |
+| -------- | -------- | ----- |
+| Vercel | `VITE_API_URL` | `https://YOUR-RENDER-BACKEND-URL/api` |
+| Render | `CLIENT_ORIGIN` | `https://YOUR-VERCEL-FRONTEND-DOMAIN` |
+
+If `VITE_API_URL` is left empty in production, the app calls `/api` on the
+Vercel domain itself, which does not serve the API and returns "Route not found".
+
 Default admin (from `.env`):
 
 - Mobile: `9999999999`
