@@ -1,24 +1,18 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Download, Info, Landmark, Menu, Wallet, X } from 'lucide-react';
-import Logo from './Logo';
+import { Link } from 'react-router-dom';
 
 const links = [
-  { to: '/about', label: 'About Us', icon: Info },
-  { to: '/deposit', label: 'Deposit', icon: Landmark },
-  { to: '/withdrawal', label: 'Withdrawal', icon: Wallet },
-  { to: '/download', label: 'Download', icon: Download },
+  { to: '/about', label: 'About Us' },
+  { to: '/deposit', label: 'Deposit' },
+  { to: '/withdrawal', label: 'Withdrawal' },
+  { to: '/download', label: 'Download' },
 ];
 
 export default function Header() {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[#fffcf8]/95 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
-          <Logo className="h-9 w-9" />
+          <img src="/logo.jpg" alt="JET MOTORS" className="h-9 w-9 rounded-lg object-cover" />
           <div>
             <p className="font-display text-xl leading-none tracking-[0.18em] text-burgundy">
               JET MOTORS
@@ -34,40 +28,7 @@ export default function Header() {
             </Link>
           ))}
         </nav>
-
-        <button
-          type="button"
-          className="rounded-lg border border-line p-2 text-ink md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Menu"
-        >
-          {open ? <X size={18} /> : <Menu size={18} />}
-        </button>
       </div>
-
-      {open ? (
-        <div className="border-t border-line bg-card px-4 py-3 md:hidden">
-          <div className="grid grid-cols-2 gap-2">
-            {links.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.to}
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    navigate(item.to);
-                  }}
-                  className="flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-left text-sm"
-                >
-                  <Icon size={16} className="text-burgundy" />
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
     </header>
   );
 }
