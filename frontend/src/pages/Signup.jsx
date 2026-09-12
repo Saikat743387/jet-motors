@@ -7,7 +7,7 @@ export default function Signup() {
   const { register, settings } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const inviteFromLink = useMemo(() => params.get('invite') || '', [params]);
+  const inviteFromLink = useMemo(() => params.get('ref') || params.get('invite') || '', [params]);
   const [form, setForm] = useState({
     mobile: '',
     password: '',
@@ -82,7 +82,7 @@ export default function Signup() {
         {loading ? 'Creating account…' : 'Sign Up'}
       </button>
       <p className="mt-4 text-center text-sm text-muted">
-        Already registered?{' '}
+        Already have an account?{' '}
         <Link to="/login" className="font-semibold text-burgundy">
           Login
         </Link>

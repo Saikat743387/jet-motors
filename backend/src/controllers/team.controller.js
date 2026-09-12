@@ -41,7 +41,7 @@ export const teamOverview = asyncHandler(async (req, res) => {
     commission: commMap[level] || 0,
   }));
 
-  const inviteLink = `${env.clientOrigin}/signup?invite=${req.user.inviteCode}`;
+  const inviteLink = `${env.clientOrigin}/signup?ref=${req.user.inviteCode}`;
 
   res.json({
     totalTeamSize: levels.reduce((s, l) => s + l.teamSize, 0),

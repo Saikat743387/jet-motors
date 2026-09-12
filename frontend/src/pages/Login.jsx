@@ -58,7 +58,7 @@ export default function Login() {
         {loading ? 'Please wait…' : 'Login'}
       </button>
       <p className="mt-4 text-center text-sm text-muted">
-        New here?{' '}
+        Don&apos;t have an account?{' '}
         <Link to="/signup" className="font-semibold text-burgundy">
           Sign Up
         </Link>
