@@ -7,6 +7,7 @@ import { Referral } from '../models/Referral.js';
 import { getSettings } from '../models/AppSettings.js';
 import { ApiError } from '../utils/apiError.js';
 import { nextUserId, uniqueInviteCode } from '../utils/ids.js';
+import { duplicateKeyFields } from '../utils/duplicateKey.js';
 import { logActivity } from '../utils/logger.js';
 
 const MOBILE_RE = /^[6-9]\d{9}$/;
@@ -70,44 +71,54 @@ export async function registerUser({ mobile, password, confirmPassword, inviteCo
     throw new ApiError(400, 'Referral code is required');
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    const userId = await nextUserId();
-    const code = await uniqueInviteCode();
-    const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      const userId = await nextUserId();
+      const code = await uniqueInviteCode();
+      const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
 
-    const [user] = await User.create(
-      [
-        {
-          userId,
-          mobile,
-          passwordHash,
-          inviteCode: code,
-          referredBy: referrer?._id || null,
-          role: 'user',
-        },
-      ],
-      { session }
-    );
+      const [user] = await User.create(
+        [
+          {
+            userId,
+            mobile,
+            passwordHash,
+            inviteCode: code,
+            referredBy: referrer?._id || null,
+            role: 'user',
+          },
+        ],
+        { session }
+      );
 
-    if (referrer) await linkReferrals(session, user, referrer);
+      if (referrer) await linkReferrals(session, user, referrer);
 
-    await session.commitTransaction();
-    await logActivity({
-      actorId: user._id,
-      actorRole: 'user',
-      action: 'user.register',
-      targetType: 'user',
-      targetId: user.userId,
-      ip,
-    });
-    return user;
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
-  } finally {
-    session.endSession();
+      await session.commitTransaction();
+      await logActivity({
+        actorId: user._id,
+        actorRole: 'user',
+        action: 'user.register',
+        targetType: 'user',
+        targetId: user.userId,
+        ip,
+      });
+      return user;
+    } catch (err) {
+      await session.abortTransaction();
+      if (err && err.code === 11000) {
+        const keys = duplicateKeyFields(err);
+        if (keys.includes('mobile')) {
+          throw new ApiError(409, 'Mobile number is already registered');
+        }
+        if (attempt < 2) continue;
+        throw new ApiError(409, 'Unable to create account, please try again');
+      }
+      throw err;
+    } finally {
+      session.endSession();
+    }
   }
 }
 
