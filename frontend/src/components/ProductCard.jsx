@@ -56,3 +56,4 @@ function Meta({ label, value }) {
     </div>
   );
 }
+// Buy button Green #22C55E
