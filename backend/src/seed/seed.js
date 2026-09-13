@@ -58,11 +58,6 @@ export async function ensureAdmin() {
       existing.mobile = env.adminMobile;
       changed = true;
     }
-    const ok = await argon2.verify(existing.passwordHash, env.adminPassword).catch(() => false);
-    if (!ok) {
-      existing.passwordHash = await argon2.hash(env.adminPassword, { type: argon2.argon2id });
-      changed = true;
-    }
     if (changed) {
       await existing.save();
       console.log(`Admin verified: ${FIXED_ADMIN_USERID} / ${env.adminMobile}`);
