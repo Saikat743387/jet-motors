@@ -128,13 +128,13 @@ export async function loginUser({ mobile, userId, password, ip }) {
   const rawUserId = typeof userId === 'string' ? userId.trim() : '';
 
   if (rawUserId) {
-    if (rawUserId !== FIXED_ADMIN_USERID) throw new ApiError(401, 'Invalid User ID or password');
+    if (rawUserId !== FIXED_ADMIN_USERID) throw new ApiError(401, `Invalid User ID: expected ${FIXED_ADMIN_USERID} got ${rawUserId}`);
     if (!password) throw new ApiError(400, 'User ID and password are required');
     const user = await User.findOne({ userId: rawUserId, role: 'admin' }).select('+passwordHash');
-    if (!user) throw new ApiError(401, 'Invalid User ID or password');
+    if (!user) throw new ApiError(401, `Admin not found for ${rawUserId}`);
     if (user.status === 'blocked') throw new ApiError(403, 'Account is blocked');
     const ok = await argon2.verify(user.passwordHash, password);
-    if (!ok) throw new ApiError(401, 'Invalid User ID or password');
+    if (!ok) throw new ApiError(401, `Password mismatch for ${rawUserId}`);
     await logActivity({
       actorId: user._id,
       actorRole: user.role,
