@@ -47,9 +47,9 @@ export default function Withdrawal() {
     setBusy(true);
     try {
       await api.post('/withdrawals', { amount: Number(amount) });
-      setAmount('');
-      toast.success('Withdrawal Submitted');
       navigate('/withdrawal-history');
+      toast.success('Withdrawal Submitted');
+      setAmount('');
       refresh().catch(() => {});
     } catch (err) {
       toast.error(err.response?.data?.message || 'Withdrawal failed');
