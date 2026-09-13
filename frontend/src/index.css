@@ -67,6 +67,10 @@ textarea {
   background: #45a3ff;
 }
 
+.btn-primary:active {
+  background: #0e5bb5;
+}
+
 .btn-gold {
   background: #1683ff;
   color: #ffffff;
