@@ -16,7 +16,6 @@ export default function Payment() {
       await api.post(`/deposits/${id}/simulate`, { paymentReference: `UPI-${Date.now()}` });
       await refresh();
       toast.success('Payment verified');
-      navigate('/recharge-history');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Payment verification failed');
     } finally {
