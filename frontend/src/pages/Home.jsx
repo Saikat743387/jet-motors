@@ -57,9 +57,9 @@ export default function Home() {
         <h2 className="mb-3 font-display text-3xl">Quick Actions</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Action to="/deposit" icon={Landmark} label="Deposit" iconClass="text-[#F59E0B]" />
-          <Action to="/withdrawal" icon={Wallet} label="Withdrawal" />
-          <Action to="/team" icon={Users} label="Team" />
-          <Action to="/support" icon={Headphones} label="Support" />
+          <Action to="/withdrawal" icon={Wallet} label="Withdrawal" iconClass="text-[#F59E0B]" />
+          <Action to="/team" icon={Users} label="Team" iconClass="text-[#F59E0B]" />
+          <Action to="/support" icon={Headphones} label="Support" iconClass="text-[#F59E0B]" />
         </div>
       </section>
     </div>
