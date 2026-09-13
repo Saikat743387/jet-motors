@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { ArrowRight } from 'lucide-react';
 import api from '../services/api';
 import { inr } from '../utils/format';
 
@@ -85,9 +86,14 @@ export default function Deposit() {
           type="button"
           disabled={loading}
           onClick={proceed}
-          className="btn-primary mt-5 w-full rounded-xl py-3 font-semibold disabled:opacity-60"
+          className="btn-primary mt-5 w-full rounded-xl py-3 font-semibold disabled:opacity-60 flex items-center justify-center gap-2 group"
         >
-          {loading ? 'Preparing…' : 'PROCEED TO PAYMENT'}
+          {loading ? 'Preparing…' : (
+            <>
+              PROCEED TO PAYMENT
+              <ArrowRight size={18} className="text-[#22C55E] group-hover:text-[#4ADE80] group-active:text-[#16A34A] transition-colors" />
+            </>
+          )}
         </button>
       </div>
     </div>
