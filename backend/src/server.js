@@ -72,6 +72,10 @@ app.get(
 app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, name: 'JET MOTORS' }));
+app.get('/api/debug/db', asyncHandler(async (_req, res) => {
+  const mongoose = (await import('mongoose')).default;
+  res.json({ db: mongoose.connection.name, host: mongoose.connection.host, readyState: mongoose.connection.readyState });
+}));
 app.get('/api/settings', publicSettings);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
