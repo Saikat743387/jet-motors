@@ -68,7 +68,7 @@ export default function Deposit() {
               className={`rounded-xl border px-3 py-3 text-sm font-semibold ${
                 !other && Number(amount) === chip
                   ? 'border-burgundy bg-burgundy text-white'
-                  : 'border-line bg-white'
+                  : 'border-line bg-ivory text-ink'
               }`}
               onClick={() => {
                 const product = options.products.find((p) => p.price === chip);
@@ -83,7 +83,7 @@ export default function Deposit() {
           <button
             type="button"
             className={`rounded-xl border px-3 py-3 text-sm font-semibold ${
-              other ? 'border-burgundy bg-burgundy text-white' : 'border-line bg-white'
+              other ? 'border-burgundy bg-burgundy text-white' : 'border-line bg-ivory text-ink'
             }`}
             onClick={() => {
               setOther(true);
@@ -96,7 +96,7 @@ export default function Deposit() {
         </div>
         {other ? (
           <input
-            className="mt-4 w-full rounded-xl border border-line px-3 py-2.5"
+            className="mt-4 w-full rounded-xl border border-line bg-ivory px-3 py-2.5 text-ink placeholder:text-muted outline-none focus:border-gold"
             placeholder="Enter amount"
             inputMode="decimal"
             value={amount}

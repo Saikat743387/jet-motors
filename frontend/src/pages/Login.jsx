@@ -34,7 +34,7 @@ export default function Login() {
       <label className="mt-6 block text-sm font-medium">
         Mobile Number
         <input
-          className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2.5 outline-none focus:border-gold"
+          className="mt-1 w-full rounded-xl border border-line bg-ivory px-3 py-2.5 text-ink placeholder:text-muted outline-none focus:border-gold"
           inputMode="numeric"
           maxLength={10}
           value={form.mobile}
@@ -45,7 +45,7 @@ export default function Login() {
         Password
         <input
           type="password"
-          className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2.5 outline-none focus:border-gold"
+          className="mt-1 w-full rounded-xl border border-line bg-ivory px-3 py-2.5 text-ink placeholder:text-muted outline-none focus:border-gold"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />

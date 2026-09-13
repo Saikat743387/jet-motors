@@ -110,7 +110,7 @@ export default function Withdrawal() {
         <label className="block text-sm font-medium">
           Withdrawal Amount
           <input
-            className="mt-1 w-full rounded-xl border border-line px-3 py-2.5"
+            className="mt-1 w-full rounded-xl border border-line bg-ivory px-3 py-2.5 text-ink placeholder:text-muted outline-none focus:border-gold"
             placeholder="₹"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
@@ -129,7 +129,7 @@ function Field({ label, value, onChange }) {
     <label className="mt-4 block text-sm font-medium">
       {label}
       <input
-        className="mt-1 w-full rounded-xl border border-line px-3 py-2.5"
+        className="mt-1 w-full rounded-xl border border-line bg-ivory px-3 py-2.5 text-ink placeholder:text-muted outline-none focus:border-gold"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

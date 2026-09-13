@@ -9,7 +9,7 @@ const links = [
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[#fffcf8]/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-line bg-card/95 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
           <img src="/logo.jpg" alt="JET MOTORS" className="h-9 w-9 rounded-lg object-cover" />

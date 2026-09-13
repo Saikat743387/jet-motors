@@ -3,16 +3,19 @@
 @theme {
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
-  --color-burgundy: #8b1e1e;
-  --color-burgundy-dark: #6e1616;
-  --color-gold: #c4a35a;
-  --color-gold-deep: #a07c32;
-  --color-ivory: #f7f3ee;
-  --color-parchment: #efe6d8;
-  --color-ink: #2c241c;
-  --color-muted: #6b5e50;
-  --color-card: #fffcf8;
-  --color-line: #e4d8c4;
+  --color-burgundy: #1683ff;
+  --color-burgundy-dark: #45a3ff;
+  --color-gold: #45a3ff;
+  --color-gold-deep: #1683ff;
+  --color-ivory: #07111f;
+  --color-parchment: #12243d;
+  --color-ink: #ffffff;
+  --color-muted: #94a3b8;
+  --color-card: #0d1b2a;
+  --color-line: #1e3550;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
 }
 
 html,
@@ -23,8 +26,8 @@ body,
 
 body {
   margin: 0;
-  background: #f7f3ee;
-  color: #2c241c;
+  background: #07111f;
+  color: #ffffff;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
@@ -46,30 +49,30 @@ textarea {
 
 .gold-rule {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #c4a35a, transparent);
+  background: linear-gradient(90deg, transparent, #1683ff, transparent);
 }
 
 .premium-card {
-  background: #fffcf8;
-  border: 1px solid #e4d8c4;
-  box-shadow: 0 8px 24px rgba(44, 36, 28, 0.06);
+  background: #0d1b2a;
+  border: 1px solid #1e3550;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .btn-primary {
-  background: #8b1e1e;
-  color: #fff8ee;
+  background: #1683ff;
+  color: #ffffff;
 }
 
 .btn-primary:hover {
-  background: #6e1616;
+  background: #45a3ff;
 }
 
 .btn-gold {
-  background: #c4a35a;
-  color: #2c241c;
+  background: #1683ff;
+  color: #ffffff;
 }
 
 .btn-gold:hover {
-  background: #a07c32;
-  color: #fff8ee;
+  background: #45a3ff;
+  color: #ffffff;
 }

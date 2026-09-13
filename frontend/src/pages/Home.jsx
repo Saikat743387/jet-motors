@@ -16,14 +16,14 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-3xl bg-[#2c241c] px-5 py-6 text-[#f7f3ee]">
+      <section className="overflow-hidden rounded-3xl bg-card px-5 py-6 text-white border border-line">
         <p className="text-xs uppercase tracking-[0.32em] text-gold">JET MOTORS</p>
         <h1 className="mt-2 font-display text-4xl">Welcome Back</h1>
-        <p className="mt-1 text-sm text-[#d9ccb8]">
+        <p className="mt-1 text-sm text-muted">
           {user?.userId} · Premium automotive plans
         </p>
-        <div className="mt-6 rounded-2xl bg-white/8 px-4 py-4">
-          <p className="text-xs uppercase tracking-wider text-[#d9ccb8]">Available Balance</p>
+        <div className="mt-6 rounded-2xl bg-[#07111F] px-4 py-4 border border-line">
+          <p className="text-xs uppercase tracking-wider text-muted">Available Balance</p>
           <p className="mt-1 font-display text-4xl text-gold">{inr(user?.balance)}</p>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3">
