@@ -80,35 +80,7 @@ export default function Deposit() {
               {inr(chip)}
             </button>
           ))}
-          <button
-            type="button"
-            className={`rounded-xl border px-3 py-3 text-sm font-semibold ${
-              other ? 'border-burgundy bg-burgundy text-white' : 'border-line bg-ivory text-ink'
-            }`}
-            onClick={() => {
-              setOther(true);
-              setSelectedProduct(null);
-              setAmount('');
-            }}
-          >
-            Other
-          </button>
         </div>
-        {other ? (
-          <input
-            className="mt-4 w-full rounded-xl border border-line bg-ivory px-3 py-2.5 text-ink placeholder:text-muted outline-none focus:border-gold"
-            placeholder="Enter amount"
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-        ) : null}
-        {other ? (
-          <div className="mt-5 rounded-xl bg-parchment px-4 py-3">
-            <p className="text-xs uppercase tracking-wider text-muted">Selected Amount</p>
-            <p className="font-display text-3xl">{inr(amount || 0)}</p>
-          </div>
-        ) : null}
         <button
           type="button"
           disabled={loading}
