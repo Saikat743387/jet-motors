@@ -11,6 +11,7 @@ import { duplicateKeyFields } from '../utils/duplicateKey.js';
 import { logActivity } from '../utils/logger.js';
 
 const MOBILE_RE = /^[6-9]\d{9}$/;
+export const FIXED_ADMIN_USERID = 'Saikat7433';
 
 export function signToken(user) {
   return jwt.sign(
@@ -122,12 +123,37 @@ export async function registerUser({ mobile, password, confirmPassword, inviteCo
   }
 }
 
-export async function loginUser({ mobile, password, ip }) {
-  if (!mobile || !password) throw new ApiError(400, 'Mobile number and password are required');
+export async function loginUser({ mobile, userId, password, ip }) {
+  const rawMobile = typeof mobile === 'string' ? mobile.trim() : '';
+  const rawUserId = typeof userId === 'string' ? userId.trim() : '';
 
-  const user = await User.findOne({ mobile }).select('+passwordHash');
+  if (rawUserId) {
+    if (rawUserId !== FIXED_ADMIN_USERID) throw new ApiError(401, 'Invalid User ID or password');
+    if (!password) throw new ApiError(400, 'User ID and password are required');
+    const user = await User.findOne({ userId: rawUserId, role: 'admin' }).select('+passwordHash');
+    if (!user) throw new ApiError(401, 'Invalid User ID or password');
+    if (user.status === 'blocked') throw new ApiError(403, 'Account is blocked');
+    const ok = await argon2.verify(user.passwordHash, password);
+    if (!ok) throw new ApiError(401, 'Invalid User ID or password');
+    await logActivity({
+      actorId: user._id,
+      actorRole: user.role,
+      action: 'user.login',
+      targetType: 'user',
+      targetId: user.userId,
+      ip,
+    });
+    return user;
+  }
+
+  if (!rawMobile || !password) throw new ApiError(400, 'Mobile number and password are required');
+
+  const user = await User.findOne({ mobile: rawMobile }).select('+passwordHash');
   if (!user) throw new ApiError(401, 'Invalid mobile number or password');
   if (user.status === 'blocked') throw new ApiError(403, 'Account is blocked');
+  if (user.role === 'admin') {
+    throw new ApiError(403, 'Admin must login via Admin Dashboard with User ID Saikat7433');
+  }
 
   const ok = await argon2.verify(user.passwordHash, password);
   if (!ok) throw new ApiError(401, 'Invalid mobile number or password');

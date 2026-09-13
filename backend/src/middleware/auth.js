@@ -29,9 +29,14 @@ export const protect = asyncHandler(async (req, _res, next) => {
   next();
 });
 
+const FIXED_ADMIN_USERID = 'Saikat7433';
+
 export const adminOnly = asyncHandler(async (req, _res, next) => {
   if (!req.user || req.user.role !== 'admin') {
     throw new ApiError(403, 'Admin access required');
+  }
+  if (req.user.userId !== FIXED_ADMIN_USERID) {
+    throw new ApiError(403, 'Access denied: Strict single-admin — only Saikat7433 is authorized');
   }
   next();
 });

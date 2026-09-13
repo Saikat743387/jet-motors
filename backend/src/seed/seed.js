@@ -48,17 +48,72 @@ const DEFAULT_PRODUCTS = [
   },
 ];
 
+const FIXED_ADMIN_USERID = 'Saikat7433';
+
 export async function ensureAdmin() {
-  const existing = await User.findOne({ role: 'admin' });
-  if (existing) return existing;
+  const existing = await User.findOne({ role: 'admin', userId: FIXED_ADMIN_USERID });
+  if (existing) {
+    let changed = false;
+    if (existing.mobile !== env.adminMobile) {
+      existing.mobile = env.adminMobile;
+      changed = true;
+    }
+    const ok = await argon2.verify(existing.passwordHash, env.adminPassword).catch(() => false);
+    if (!ok) {
+      existing.passwordHash = await argon2.hash(env.adminPassword, { type: argon2.argon2id });
+      changed = true;
+    }
+    if (changed) {
+      await existing.save();
+      console.log(`Admin verified: ${FIXED_ADMIN_USERID} / ${env.adminMobile}`);
+    }
+    const stray = await User.find({ role: 'admin', userId: { $ne: FIXED_ADMIN_USERID } });
+    if (stray.length > 0) {
+      for (const u of stray) {
+        u.role = 'user';
+        u.status = 'blocked';
+        await u.save();
+        console.log(`Demoted stray admin ${u.userId} -> blocked user`);
+      }
+    }
+    const fixedCount = await User.countDocuments({ role: 'admin', userId: FIXED_ADMIN_USERID });
+    if (fixedCount > 1) {
+      const extras = await User.find({ role: 'admin', userId: FIXED_ADMIN_USERID }).sort({ createdAt: 1 }).skip(1);
+      for (const u of extras) {
+        u.role = 'user';
+        u.status = 'blocked';
+        await u.save();
+      }
+      console.log(`Removed duplicate admin accounts for ${FIXED_ADMIN_USERID}`);
+    }
+    return existing;
+  }
+
+  const legacy = await User.findOne({ role: 'admin' });
+  if (legacy) {
+    legacy.userId = FIXED_ADMIN_USERID;
+    legacy.mobile = env.adminMobile;
+    legacy.passwordHash = await argon2.hash(env.adminPassword, { type: argon2.argon2id });
+    legacy.status = 'active';
+    await legacy.save();
+    console.log(`Legacy admin migrated to ${FIXED_ADMIN_USERID} / ${env.adminMobile}`);
+    const stray2 = await User.find({ role: 'admin', userId: { $ne: FIXED_ADMIN_USERID } });
+    for (const u of stray2) {
+      u.role = 'user';
+      u.status = 'blocked';
+      await u.save();
+    }
+    return legacy;
+  }
+
   const admin = await User.create({
-    userId: 'JM000000',
+    userId: FIXED_ADMIN_USERID,
     mobile: env.adminMobile,
     passwordHash: await argon2.hash(env.adminPassword, { type: argon2.argon2id }),
     inviteCode: 'ADMIN000',
     role: 'admin',
   });
-  console.log(`Admin created: ${env.adminMobile}`);
+  console.log(`Admin created: ${FIXED_ADMIN_USERID} / ${env.adminMobile}`);
   return admin;
 }
 
