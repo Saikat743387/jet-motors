@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#1f1814"/>
+  <path d="M0 220 L640 80 L640 360 L0 360 Z" fill="#8B1E1E"/>
+  <rect x="40" y="40" width="560" height="280" fill="none" stroke="#C4A35A" stroke-width="2"/>
+  <text x="80" y="140" fill="#C4A35A" font-family="Georgia, serif" font-size="28">JET MOTORS</text>
+  <text x="80" y="210" fill="#F7F3EE" font-family="Georgia, serif" font-size="64">Plan 4</text>
+  <text x="80" y="260" fill="#EFE6D8" font-family="sans-serif" font-size="20">Signature Service Plan</text>
+</svg>

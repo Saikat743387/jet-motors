@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { inr } from '../utils/format';
+import { assetUrl, inr } from '../utils/format';
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
@@ -8,9 +8,10 @@ export default function ProductCard({ product }) {
     <article className="premium-card overflow-hidden rounded-2xl">
       <div className="relative h-24 bg-parchment">
         <img
-          src="/products/car.jpg"
+          src={assetUrl(product.image)}
           alt={product.name}
           className="h-full w-full object-cover"
+          onError={(e) => { e.currentTarget.src = '/products/car.jpg'; }}
         />
         <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
           <svg

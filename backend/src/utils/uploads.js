@@ -33,3 +33,10 @@ export async function findImage(filename) {
 export function imageStream(filename) {
   return getBucket().openDownloadStreamByName(filename, { revision: -1 });
 }
+
+export async function deleteImage(filename) {
+  const file = await findImage(filename);
+  if (!file) return false;
+  await getBucket().delete(file._id);
+  return true;
+}

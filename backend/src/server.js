@@ -31,12 +31,20 @@ app.use(
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
-app.use(
-  cors({
-    origin: env.clientOrigin,
-    credentials: true,
-  })
-);
+const corsOptions = {
+  credentials: true,
+  origin(origin, cb) {
+    if (!origin) return cb(null, true);
+    const normalized = origin.replace(/\/+$/, '');
+    if (normalized.endsWith('.vercel.app')) return cb(null, true);
+    if (env.allowedOrigins.length === 0) return cb(null, true);
+    if (env.allowedOrigins.includes(normalized)) return cb(null, true);
+    if (normalized === 'http://localhost:5173' || normalized === 'http://localhost:5174') return cb(null, true);
+    return cb(new Error(`CORS blocked for origin: ${origin}`));
+  },
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use(morgan(env.isProd ? 'combined' : 'dev'));
@@ -50,8 +58,6 @@ app.use(
   })
 );
 
-app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
-
 app.get(
   '/uploads/:filename',
   asyncHandler(async (req, res) => {
@@ -62,6 +68,8 @@ app.get(
     imageStream(req.params.filename).pipe(res);
   })
 );
+
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, name: 'JET MOTORS' }));
 app.get('/api/settings', publicSettings);

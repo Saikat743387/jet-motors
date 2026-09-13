@@ -12,6 +12,20 @@ for (const key of required) {
   }
 }
 
+if (process.env.NODE_ENV === 'production' && !process.env.CLIENT_ORIGIN) {
+  throw new Error('Missing required environment variable: CLIENT_ORIGIN (set to your Vercel frontend URL)');
+}
+
+function parseAllowedOrigins(raw) {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((s) => s.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+}
+
+const allowedOrigins = parseAllowedOrigins(process.env.CLIENT_ORIGIN);
+
 export const env = {
   port: Number(process.env.PORT) || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -19,6 +33,7 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientOrigin: process.env.CLIENT_ORIGIN,
+  allowedOrigins,
   adminMobile: process.env.ADMIN_MOBILE || '9999999999',
   adminPassword: process.env.ADMIN_PASSWORD,
   cookieSecure: process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production',

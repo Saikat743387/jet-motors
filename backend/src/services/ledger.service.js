@@ -152,13 +152,25 @@ export async function confirmDepositServerSide({ user, depositId, paymentReferen
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const deposit = await Deposit.findOne({ _id: depositId, userId: user._id }).session(session);
-    if (!deposit) throw new ApiError(404, 'Deposit not found');
-    if (deposit.status === 'success') {
-      await session.abortTransaction();
-      return deposit;
+    const updated = await Deposit.findOneAndUpdate(
+      { _id: depositId, userId: user._id, status: 'pending' },
+      { $set: { status: 'success', paymentReference: paymentReference || undefined } },
+      { new: true, session }
+    );
+    if (!updated) {
+      const existing = await Deposit.findOne({ _id: depositId, userId: user._id }).session(session);
+      if (!existing) throw new ApiError(404, 'Deposit not found');
+      if (existing.status === 'success') {
+        await session.abortTransaction();
+        return existing;
+      }
+      throw new ApiError(400, 'Deposit cannot be confirmed');
     }
-    if (deposit.status !== 'pending') throw new ApiError(400, 'Deposit cannot be confirmed');
+    const deposit = updated;
+    if (!deposit.paymentReference) {
+      deposit.paymentReference = deposit.transactionId;
+      await deposit.save({ session });
+    }
 
     let product = null;
     if (deposit.productId) {
@@ -168,10 +180,6 @@ export async function confirmDepositServerSide({ user, depositId, paymentReferen
         throw new ApiError(400, 'Deposit amount does not match current product price');
       }
     }
-
-    deposit.status = 'success';
-    deposit.paymentReference = paymentReference || deposit.transactionId;
-    await deposit.save({ session });
 
     await credit(session, user._id, deposit.amount, { totalDeposit: deposit.amount });
     await writeTxn(session, {
@@ -197,6 +205,43 @@ export async function confirmDepositServerSide({ user, depositId, paymentReferen
       targetType: 'deposit',
       targetId: deposit.transactionId,
       details: { amount: deposit.amount },
+      ip,
+    });
+    return deposit;
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
+  }
+}
+
+export async function adminUpdateDeposit({ admin, depositId, status, adminNote, paymentReference, ip }) {
+  const allowed = ['success', 'failed', 'rejected', 'cancelled'];
+  if (!allowed.includes(status)) throw new ApiError(400, 'Invalid deposit status');
+  if (status === 'success') throw new ApiError(400, 'Use confirm endpoint for success');
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const deposit = await Deposit.findOne({ _id: depositId, status: 'pending' }).session(session);
+    if (!deposit) {
+      const existing = await Deposit.findById(depositId).session(session);
+      if (!existing) throw new ApiError(404, 'Deposit not found');
+      throw new ApiError(400, 'Deposit is already finalized');
+    }
+    deposit.status = status;
+    deposit.note = adminNote || deposit.note || '';
+    if (paymentReference) deposit.paymentReference = paymentReference;
+    await deposit.save({ session });
+    await session.commitTransaction();
+    await logActivity({
+      actorId: admin._id,
+      actorRole: 'admin',
+      action: `deposit.${status}`,
+      targetType: 'deposit',
+      targetId: deposit.transactionId,
+      details: { status, adminNote },
       ip,
     });
     return deposit;
@@ -288,6 +333,7 @@ export async function requestWithdrawal({ user, amount, ip }) {
 }
 
 export async function adminUpdateWithdrawal({ admin, withdrawalId, status, adminNote, ip }) {
+  if (status === 'success') status = 'completed';
   const allowed = ['approved', 'rejected', 'processing', 'completed'];
   if (!allowed.includes(status)) throw new ApiError(400, 'Invalid withdrawal status');
 

@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --color-burgundy: #8b1e1e;
+  --color-burgundy-dark: #6e1616;
+  --color-gold: #c4a35a;
+  --color-gold-deep: #a07c32;
+  --color-ivory: #f7f3ee;
+  --color-parchment: #efe6d8;
+  --color-ink: #2c241c;
+  --color-muted: #6b5e50;
+  --color-card: #fffcf8;
+  --color-line: #e4d8c4;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f7f3ee;
+  color: #2c241c;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.safe-bottom {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c4a35a, transparent);
+}
+
+.premium-card {
+  background: #fffcf8;
+  border: 1px solid #e4d8c4;
+  box-shadow: 0 8px 24px rgba(44, 36, 28, 0.06);
+}
+
+.btn-primary {
+  background: #8b1e1e;
+  color: #fff8ee;
+}
+
+.btn-primary:hover {
+  background: #6e1616;
+}
+
+.btn-gold {
+  background: #c4a35a;
+  color: #2c241c;
+}
+
+.btn-gold:hover {
+  background: #a07c32;
+  color: #fff8ee;
+}
