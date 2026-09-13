@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -6,6 +7,7 @@ import { inr } from '../utils/format';
 
 export default function Withdrawal() {
   const { user, refresh, settings } = useAuth();
+  const navigate = useNavigate();
   const [bank, setBank] = useState(undefined);
   const [form, setForm] = useState({ holderName: '', accountNumber: '', ifscCode: '' });
   const [amount, setAmount] = useState('');
@@ -47,7 +49,8 @@ export default function Withdrawal() {
       await api.post('/withdrawals', { amount: Number(amount) });
       await refresh();
       setAmount('');
-      toast.success('Withdrawal request submitted');
+      toast.success('Withdrawal Submitted');
+      navigate('/withdrawal-history');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Withdrawal failed');
     } finally {
