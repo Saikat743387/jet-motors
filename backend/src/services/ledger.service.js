@@ -35,7 +35,7 @@ export async function creditSignupBonus(session, userId) {
 
   await User.findOneAndUpdate(
     { _id: userId },
-    { $inc: { balance: SIGNUP_BONUS_AMOUNT } },
+    { $inc: { signupBonus: SIGNUP_BONUS_AMOUNT } },
     { new: true, session }
   );
 

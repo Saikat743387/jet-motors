@@ -111,7 +111,7 @@ export default function AdminUserDetail() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <StatCard label="Current Balance" value={inr(user.balance)} tone="burgundy" />
-        <StatCard label="Total Deposits" value={inr(user.totalDeposit)} tone="gold" />
+        <StatCard label="Total Deposits" value={inr((user.totalDeposit || 0) + (user.signupBonus || 0))} tone="gold" />
         <StatCard label="Total Earnings" value={inr(user.totalEarnings)} tone="green" />
         <StatCard label="Total Withdrawals" value={inr(user.totalWithdrawal)} tone="rose" />
         <StatCard label="Total Purchases" value={user.totalPurchases} tone="sky" />
@@ -136,7 +136,7 @@ export default function AdminUserDetail() {
           <Row label="Total withdrawals" value={inr(user.totalWithdrawal)} />
           <Row label="Pending withdrawal amount" value={inr(user.pendingWithdrawalAmount)} />
           <Row label="Completed withdrawal amount" value={inr(user.completedWithdrawalAmount)} />
-          <Row label="Total deposits" value={inr(user.totalDeposit)} />
+          <Row label="Total deposits" value={inr((user.totalDeposit || 0) + (user.signupBonus || 0))} />
           <Row label="Available balance" value={inr(user.balance)} />
         </Card>
       </div>

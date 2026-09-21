@@ -179,6 +179,7 @@ export function publicUser(user) {
     mobile: user.mobile,
     inviteCode: user.inviteCode,
     balance: user.balance,
+    signupBonus: user.signupBonus,
     totalDeposit: user.totalDeposit,
     totalWithdrawal: user.totalWithdrawal,
     totalCommission: user.totalCommission,
