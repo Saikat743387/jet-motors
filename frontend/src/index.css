@@ -80,3 +80,108 @@ textarea {
   background: #45a3ff;
   color: #ffffff;
 }
+
+/* ── Premium Buy Button ────────────────────────────────────── */
+
+@keyframes btnBuyShine {
+  0% { left: -60%; }
+  100% { left: 110%; }
+}
+
+@keyframes btnBuyGlow {
+  0%, 100% { opacity: 0.35; box-shadow: 0 0 10px rgba(34, 197, 94, 0.35), 0 0 20px rgba(34, 197, 94, 0.15); }
+  50%      { opacity: 0.55; box-shadow: 0 0 18px rgba(34, 197, 94, 0.55), 0 0 36px rgba(34, 197, 94, 0.25); }
+}
+
+@keyframes btnBuyPress {
+  0%   { transform: scale(0.94); box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2); }
+  50%  { transform: scale(1.02); box-shadow: 0 6px 24px rgba(34, 197, 94, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35); }
+}
+
+.btn-buy {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  box-shadow:
+    0 4px 14px rgba(34, 197, 94, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  animation: btnBuyGlow 3s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+
+.btn-buy::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0.08) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: btnBuyShine 3s ease-in-out infinite;
+}
+
+.btn-buy:hover {
+  transform: scale(1.03);
+  box-shadow:
+    0 8px 28px rgba(34, 197, 94, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  filter: brightness(1.12);
+}
+
+.btn-buy:hover::after {
+  animation-duration: 0.7s;
+}
+
+.btn-buy:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+  filter: brightness(0.96);
+  transition-duration: 0.08s;
+}
+
+.btn-buy:active::after {
+  animation: none;
+  opacity: 0;
+}
+
+/* ── Reduced motion ────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-buy,
+  .btn-buy::after {
+    animation: none !important;
+  }
+  .btn-buy {
+    transition: filter 0.1s ease !important;
+  }
+  .btn-buy:hover {
+    transform: none !important;
+  }
+  .btn-buy:active {
+    transform: scale(0.97) !important;
+    transition-duration: 0.05s !important;
+  }
+}

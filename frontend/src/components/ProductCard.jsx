@@ -38,7 +38,7 @@ export default function ProductCard({ product }) {
         </div>
         <button
           type="button"
-          className="mt-4 w-full rounded-xl py-2 text-sm font-semibold tracking-wide bg-[#22C55E] text-white hover:bg-[#4ADE80] active:bg-[#16A34A] shadow-[0_4px_14px_rgba(34,197,94,0.35)] hover:shadow-[0_6px_20px_rgba(34,197,94,0.45)] transition-all"
+          className="btn-buy mt-4"
           onClick={() => navigate(`/deposit?productId=${product._id}`)}
         >
           BUY
