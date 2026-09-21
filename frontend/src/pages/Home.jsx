@@ -18,24 +18,31 @@ export default function Home() {
     <div className="space-y-6">
       <section className="overflow-hidden rounded-3xl bg-card px-5 py-6 text-white border border-line">
         <p className="text-xs uppercase tracking-[0.32em] text-gold">JET MOTORS</p>
-        <h1 className="mt-2 font-display text-4xl">Welcome Back</h1>
-        <p className="mt-1 text-sm text-muted">
-          {user?.userId} · Premium automotive plans
-        </p>
-        <div className="mt-6 rounded-2xl bg-[#07111F] px-4 py-4 border border-line">
-          <p className="text-xs uppercase tracking-wider text-muted">Available Balance</p>
-          <p className="mt-1 font-display text-4xl text-gold">{inr(user?.balance)}</p>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <Link to="/deposit" className="btn-gold rounded-xl py-3 text-center text-sm font-semibold">
-            Deposit
-          </Link>
-          <Link
-            to="/withdrawal"
-            className="rounded-xl border border-gold/50 py-3 text-center text-sm font-semibold text-gold"
-          >
-            Withdrawal
-          </Link>
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="min-w-0 rounded-2xl bg-[#07111F] px-4 py-4 border border-line">
+            <p className="text-xs uppercase tracking-wider text-muted">Deposit Balance</p>
+            <p className="mt-1 truncate font-display text-2xl text-gold sm:text-3xl">
+              {inr(user?.totalDeposit)}
+            </p>
+            <Link
+              to="/deposit"
+              className="btn-gold mt-3 block rounded-xl py-2.5 text-center text-sm font-semibold"
+            >
+              Deposit
+            </Link>
+          </div>
+          <div className="min-w-0 rounded-2xl bg-[#07111F] px-4 py-4 border border-line">
+            <p className="text-xs uppercase tracking-wider text-muted">Withdrawal Balance</p>
+            <p className="mt-1 truncate font-display text-2xl text-gold sm:text-3xl">
+              {inr(user?.balance)}
+            </p>
+            <Link
+              to="/withdrawal"
+              className="mt-3 block rounded-xl border border-gold/50 py-2.5 text-center text-sm font-semibold text-gold"
+            >
+              Withdrawal
+            </Link>
+          </div>
         </div>
       </section>
 
