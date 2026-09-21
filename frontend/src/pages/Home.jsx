@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Headphones, Landmark, Users, Wallet } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import ProductCard from '../components/ProductCard';
@@ -59,30 +58,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      <section>
-        <h2 className="mb-3 font-display text-3xl">Quick Actions</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Action to="/deposit" icon={Landmark} label="Deposit" iconClass="text-[#F59E0B]" />
-          <Action to="/withdrawal" icon={Wallet} label="Withdrawal" iconClass="text-[#F59E0B]" />
-          <Action to="/team" icon={Users} label="Team" iconClass="text-[#F59E0B]" />
-          <Action to="/support" icon={Headphones} label="Support" iconClass="text-[#F59E0B]" />
-        </div>
-      </section>
     </div>
-  );
-}
-
-function Action({ to, icon: Icon, label, iconClass }) {
-  return (
-    <Link
-      to={to}
-      className="premium-card flex flex-col items-center gap-2 rounded-2xl px-3 py-4 text-sm font-semibold"
-    >
-      <span className={`rounded-full bg-parchment p-3 ${iconClass || 'text-burgundy'}`}>
-        <Icon size={20} />
-      </span>
-      {label}
-    </Link>
   );
 }
