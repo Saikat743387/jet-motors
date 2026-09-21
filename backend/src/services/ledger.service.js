@@ -23,6 +23,34 @@ async function credit(session, userId, amount, extra = {}) {
   return updated;
 }
 
+const SIGNUP_BONUS_AMOUNT = 50;
+
+export async function creditSignupBonus(session, userId) {
+  const existing = await Transaction.findOne({
+    userId,
+    type: 'signup_bonus',
+    status: 'success',
+  }).session(session);
+  if (existing) return null;
+
+  await User.findOneAndUpdate(
+    { _id: userId },
+    { $inc: { balance: SIGNUP_BONUS_AMOUNT } },
+    { new: true, session }
+  );
+
+  const txn = await writeTxn(session, {
+    transactionId: transactionRef('SBN'),
+    userId,
+    type: 'signup_bonus',
+    amount: SIGNUP_BONUS_AMOUNT,
+    status: 'success',
+    meta: { description: 'Signup Bonus' },
+  });
+
+  return txn;
+}
+
 async function debitIfEnough(session, userId, amount, extra = {}) {
   const updated = await User.findOneAndUpdate(
     { _id: userId, balance: { $gte: amount } },

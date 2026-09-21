@@ -6,7 +6,7 @@ const transactionSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     type: {
       type: String,
-      enum: ['deposit', 'withdrawal', 'purchase', 'commission', 'refund'],
+      enum: ['deposit', 'withdrawal', 'purchase', 'commission', 'refund', 'signup_bonus'],
       required: true,
       index: true,
     },
