@@ -38,12 +38,12 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-ivory md:flex">
-      <aside className="border-b border-line bg-[#2c241c] text-[#f7f3ee] md:flex md:min-h-screen md:w-64 md:flex-col md:border-b-0 md:border-r md:border-black/20">
+      <aside className="border-b border-[#111111] bg-[#111111] text-white md:flex md:min-h-screen md:w-64 md:flex-col md:border-b-0 md:border-r md:border-black/20">
         <div className="flex items-center gap-3 px-5 py-4">
           <Logo className="h-9 w-9" />
           <div>
             <p className="font-display text-xl tracking-widest">JET MOTORS</p>
-            <p className="text-[10px] uppercase tracking-[0.25em] text-gold">Admin Panel</p>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-emerald-400">Admin Panel</p>
           </div>
         </div>
         <nav className="flex gap-2 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:overflow-visible md:px-3">
@@ -56,7 +56,7 @@ export default function AdminLayout() {
                 end={item.end}
                 className={({ isActive }) =>
                   `flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm ${
-                    isActive ? 'bg-burgundy text-white' : 'text-[#efe6d8] hover:bg-white/10'
+                    isActive ? 'bg-[#16A34A] text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
                   }`
                 }
               >
@@ -68,7 +68,7 @@ export default function AdminLayout() {
         </nav>
         <button
           type="button"
-          className="m-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#efe6d8] hover:bg-white/10"
+          className="m-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white"
           onClick={async () => {
             await logout();
             navigate('/login');

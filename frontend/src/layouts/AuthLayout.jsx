@@ -7,8 +7,8 @@ export default function AuthLayout() {
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo className="h-14 w-14" />
-          <h1 className="mt-4 font-display text-4xl tracking-[0.2em] text-[#45A3FF]">JET MOTORS</h1>
-          <p className="mt-1 text-xs uppercase tracking-[0.32em] text-[#1683FF]">Classic Automotive</p>
+          <h1 className="mt-4 font-display text-4xl tracking-[0.2em] text-[#111111]">JET MOTORS</h1>
+          <p className="mt-1 text-xs uppercase tracking-[0.32em] text-[#16A34A]">Classic Automotive</p>
           <div className="gold-rule mt-5 w-40" />
         </div>
         <Outlet />

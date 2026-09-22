@@ -14,10 +14,10 @@ export default function Header() {
         <Link to="/" className="flex items-center gap-2.5">
           <img src="/logo.jpg" alt="JET MOTORS" className="h-9 w-9 rounded-lg object-cover" />
           <div>
-            <p className="font-display text-xl leading-none tracking-[0.18em] text-[#45A3FF]">
+            <p className="font-display text-xl leading-none tracking-[0.18em] text-[#111111]">
               JET MOTORS
             </p>
-            <p className="text-[10px] uppercase tracking-[0.28em] text-[#1683FF]">Classic Automotive</p>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-[#16A34A]">Classic Automotive</p>
           </div>
         </Link>
 

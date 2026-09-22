@@ -15,7 +15,7 @@ const tones = {
   gold: 'border-l-gold-deep',
   green: 'border-l-emerald-600',
   amber: 'border-l-amber-500',
-  sky: 'border-l-sky-600',
+  sky: 'border-l-[#111111]',
   rose: 'border-l-rose-500',
 };
 

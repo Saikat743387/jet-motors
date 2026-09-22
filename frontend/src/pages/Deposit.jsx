@@ -91,7 +91,7 @@ export default function Deposit() {
           {loading ? 'Preparing…' : (
             <>
               PROCEED TO PAYMENT
-              <ArrowRight size={18} className="text-[#22C55E] group-hover:text-[#4ADE80] group-active:text-[#16A34A] transition-colors" />
+              <ArrowRight size={18} className="text-white/90 transition-colors group-hover:text-white group-active:text-white" />
             </>
           )}
         </button>

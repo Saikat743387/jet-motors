@@ -12,7 +12,7 @@ export default function ProductCard({ product }) {
           alt={product.name}
           className="h-full w-full object-cover"
         />
-        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-[#16A34A] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
           <svg
             className="h-3 w-3"
             viewBox="0 0 20 20"
