@@ -31,10 +31,10 @@ export default function ProductCard({ product }) {
       <div className="px-4 py-4">
         <h3 className="font-display text-xl text-ink">{product.name}</h3>
         <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-          <Meta label="Duration" value={`${product.durationDays} Days`} />
-          <Meta label="Daily Income" value={inr(product.dailyIncome)} />
-          <Meta label="Total Income" value={inr(product.totalIncome)} />
-          <Meta label="Price" value={inr(product.price)} />
+          <Meta label="Duration" value={`${product.durationDays} Days`} valueClassName="text-[#111827]" />
+          <Meta label="Daily Income" value={inr(product.dailyIncome)} valueClassName="text-[#15803D]" />
+          <Meta label="Total Income" value={inr(product.totalIncome)} valueClassName="text-[#16A34A]" />
+          <Meta label="Price" value={inr(product.price)} valueClassName="text-[#111111]" />
         </div>
         <button
           type="button"
@@ -48,11 +48,11 @@ export default function ProductCard({ product }) {
   );
 }
 
-function Meta({ label, value }) {
+function Meta({ label, value, valueClassName = 'text-ink' }) {
   return (
     <div>
       <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
-      <p className="font-semibold text-ink">{value}</p>
+      <p className={`font-semibold ${valueClassName}`}>{value}</p>
     </div>
   );
 }
