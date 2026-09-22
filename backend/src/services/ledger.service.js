@@ -24,7 +24,7 @@ async function credit(session, userId, amount, extra = {}) {
   return updated;
 }
 
-const SIGNUP_BONUS_AMOUNT = 50;
+const SIGNUP_BONUS_AMOUNT = 10;
 
 export async function creditSignupBonus(session, userId) {
   const existing = await Transaction.findOne({
