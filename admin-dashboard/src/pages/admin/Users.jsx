@@ -156,38 +156,11 @@ export default function AdminUsers() {
                   <Td>{inr(u.totalPurchaseAmount ?? 0)}</Td>
                   <Td>{u.withdrawalCount ?? 0}</Td>
                   <Td>{inr(u.totalWithdrawal ?? 0)}</Td>
-                  <Td><StatusBadge status={u.status} /></Td>
+                  <Td className="overflow-visible"><StatusBadge status={u.status} /><div data-menu-id={u._id} className="inline-block relative ml-2 align-middle"><GhostBtn className="px-1.5 py-1" aria-label={`Actions for ${u.userId}`} onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === u._id ? null : u._id); }}><MoreVertical size={16} /></GhostBtn>{menuFor === u._id ? <div className="absolute right-0 top-full z-20 mt-1 min-w-44 rounded-lg border border-line bg-card p-1 shadow-lg"><button type="button" className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-rose-700 hover:bg-rose-50" onClick={(e) => { e.stopPropagation(); setMenuFor(null); setDeleteTarget(u); setDeleteConfirm(''); setShowDelete(true); }}><Trash2 size={16} />Delete User</button></div> : null}</div></Td>
                   <Td className="text-right">
                     <div className="flex items-center justify-end gap-3">
                       <Link to={`/admin/users/${u._id}`} className="font-semibold text-burgundy hover:underline">View</Link>
                       <GhostBtn className="px-2 py-1 text-xs" onClick={() => toggle(u._id)}>{u.status === 'blocked' ? 'Unblock' : 'Block'}</GhostBtn>
-                      <div data-menu-id={u._id} className="relative">
-                        <GhostBtn
-                          className="px-1.5 py-1"
-                          aria-label={`Actions for ${u.userId}`}
-                          onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === u._id ? null : u._id); }}
-                        >
-                          <MoreVertical size={16} />
-                        </GhostBtn>
-                        {menuFor === u._id ? (
-                          <div className="absolute right-0 top-full z-20 mt-1 min-w-44 rounded-lg border border-line bg-card p-1 shadow-lg">
-                            <button
-                              type="button"
-                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-rose-700 hover:bg-rose-50"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setMenuFor(null);
-                                setDeleteTarget(u);
-                                setDeleteConfirm('');
-                                setShowDelete(true);
-                              }}
-                            >
-                              <Trash2 size={16} />
-                              Delete User
-                            </button>
-                          </div>
-                        ) : null}
-                      </div>
                     </div>
                   </Td>
                 </tr>
