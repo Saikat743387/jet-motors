@@ -27,6 +27,10 @@ export default function Team() {
         <Stat label="Total Commission" value={inr(team.totalCommission)} />
         <Stat label="Total Recharge" value={inr(team.totalRecharge)} />
       </div>
+      <div className="premium-card rounded-2xl p-4 text-center border border-gold/20">
+        <p className="text-sm font-semibold text-burgundy">Per Referral: ₹5</p>
+        <p className="text-xs text-muted">Credited to Deposit Balance</p>
+      </div>
 
       <div className="premium-card rounded-2xl p-5">
         <h2 className="font-display text-2xl">Invite Section</h2>

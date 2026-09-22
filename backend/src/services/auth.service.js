@@ -9,7 +9,7 @@ import { ApiError } from '../utils/apiError.js';
 import { nextUserId, uniqueInviteCode } from '../utils/ids.js';
 import { duplicateKeyFields } from '../utils/duplicateKey.js';
 import { logActivity } from '../utils/logger.js';
-import { creditSignupBonus } from './ledger.service.js';
+import { creditReferralReward, creditSignupBonus } from './ledger.service.js';
 
 const MOBILE_RE = /^[6-9]\d{9}$/;
 export const FIXED_ADMIN_USERID = 'Saikat7433';
@@ -96,6 +96,8 @@ export async function registerUser({ mobile, password, confirmPassword, inviteCo
       );
 
       if (referrer) await linkReferrals(session, user, referrer);
+
+      if (referrer) await creditReferralReward(session, referrer._id, user._id);
 
       await creditSignupBonus(session, user._id);
 

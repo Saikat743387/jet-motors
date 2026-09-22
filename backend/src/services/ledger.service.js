@@ -8,6 +8,7 @@ import { Withdrawal } from '../models/Withdrawal.js';
 import { BankAccount } from '../models/BankAccount.js';
 import { Transaction } from '../models/Transaction.js';
 import { Referral } from '../models/Referral.js';
+import { ReferralReward } from '../models/ReferralReward.js';
 import { Commission } from '../models/Commission.js';
 import { COMMISSION_RATES, getSettings } from '../models/AppSettings.js';
 import { ApiError } from '../utils/apiError.js';
@@ -47,6 +48,43 @@ export async function creditSignupBonus(session, userId) {
     amount: SIGNUP_BONUS_AMOUNT,
     status: 'success',
     meta: { description: 'Signup Bonus' },
+  });
+
+  return txn;
+}
+
+const REFERRAL_REWARD_AMOUNT = 5;
+
+export async function creditReferralReward(session, referrerId, referredId) {
+  if (!referrerId || !referredId) return null;
+  if (String(referrerId) === String(referredId)) return null;
+
+  // Idempotent upsert - prevents duplicate and avoids aborting outer transaction on race
+  // Use updateOne with upsert and check if a new doc was inserted
+  const upsertRes = await ReferralReward.updateOne(
+    { referrerId, referredId },
+    { $setOnInsert: { amount: REFERRAL_REWARD_AMOUNT, status: 'success' } },
+    { upsert: true, session }
+  );
+  // If no new doc was inserted, it was already rewarded
+  const wasInserted = upsertRes.upsertedCount === 1 || !!upsertRes.upsertedId;
+  if (!wasInserted) return null;
+
+  // Credit to Deposit Balance (spendable), NOT withdrawal balance
+  await User.findOneAndUpdate(
+    { _id: referrerId },
+    { $inc: { depositBalance: REFERRAL_REWARD_AMOUNT } },
+    { new: true, session }
+  );
+
+  const txn = await writeTxn(session, {
+    transactionId: transactionRef('REF'),
+    userId: referrerId,
+    type: 'referral_reward',
+    amount: REFERRAL_REWARD_AMOUNT,
+    status: 'success',
+    referenceId: referredId,
+    meta: { description: 'Referral Reward', referredId, amount: REFERRAL_REWARD_AMOUNT },
   });
 
   return txn;
