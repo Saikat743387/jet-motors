@@ -9,10 +9,10 @@ const DEFAULT_PRODUCTS = [
   {
     name: 'Plan 1',
     image: '/products/plan-1.svg',
-    durationDays: 100,
-    dailyIncome: 120,
-    totalIncome: 12000,
-    price: 540,
+    durationDays: 2,
+    dailyIncome: 25,
+    totalIncome: 50,
+    price: 40,
     isActive: true,
     sortOrder: 1,
   },
@@ -146,6 +146,21 @@ export async function migratePlanNames() {
   await Product.updateMany({ name: 'Plan 2', image: '/products/plan-2.svg' }, { $set: { name: 'Plan 1' } });
 }
 
+export async function migratePlan1Values() {
+  // ONLY Plan 1: Price 40, Daily 25, Duration 2, Total 50
+  // Preserve name, image, sortOrder, isActive, IDs
+  const res = await Product.updateOne(
+    { sortOrder: 1, image: '/products/plan-1.svg' },
+    { $set: { price: 40, dailyIncome: 25, durationDays: 2, totalIncome: 50 } }
+  );
+  if (res.modifiedCount > 0) console.log('Migrated Plan 1 values -> price 40, daily 25, duration 2, total 50');
+  // Fallback for any Plan 1 that still has old values (price 540) but sortOrder/image mismatch
+  await Product.updateMany(
+    { name: 'Plan 1', sortOrder: 1, price: 540 },
+    { $set: { price: 40, dailyIncome: 25, durationDays: 2, totalIncome: 50 } }
+  );
+}
+
 export async function seedIfEmpty() {
   const count = await Product.countDocuments();
   if (count === 0) {
@@ -153,6 +168,7 @@ export async function seedIfEmpty() {
     console.log('Seeded default products');
   } else {
     await migratePlanNames();
+    await migratePlan1Values();
   }
 
   const settingsCount = await AppSettings.countDocuments();
