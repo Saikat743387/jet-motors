@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Copy } from 'lucide-react';
 import api from '../services/api';
@@ -50,34 +49,7 @@ export default function Team() {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {team.levels.map((level) => (
-          <div key={level.level} className="premium-card rounded-2xl p-5">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-2xl">LEVEL {level.level}</h3>
-              <span className="rounded-full bg-parchment px-3 py-1 text-xs font-semibold">
-                Commission Rate: {level.commissionRate}%
-              </span>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-muted">Team Size</p>
-                <p className="text-xl font-semibold">{level.teamSize}</p>
-              </div>
-              <div>
-                <p className="text-muted">Commission</p>
-                <p className="text-xl font-semibold">{inr(level.commission)}</p>
-              </div>
-            </div>
-            <Link
-              to={`/team/${level.level}`}
-              className="btn-primary mt-4 inline-flex rounded-xl px-4 py-2 text-sm font-semibold"
-            >
-              VIEW MEMBERS
-            </Link>
-          </div>
-        ))}
-      </div>
+
     </div>
   );
 }
