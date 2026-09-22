@@ -120,6 +120,9 @@ export async function createDepositIntent({ user, productId, claimedAmount }) {
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new ApiError(400, 'Enter a valid deposit amount');
   }
+  if (amount < 100) {
+    throw new ApiError(400, 'Minimum deposit is ₹100');
+  }
 
   const deposit = await Deposit.create({
     transactionId: transactionRef('DEP'),

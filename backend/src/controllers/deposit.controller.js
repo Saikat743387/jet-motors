@@ -5,7 +5,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { confirmDepositServerSide, createDepositIntent, failOrCancelDeposit } from '../services/ledger.service.js';
 
 export const createDepositValidators = [
-  body('amount').optional().isFloat({ gt: 0 }).withMessage('Amount must be greater than 0'),
+  body('amount').optional().isFloat({ gte: 100 }).withMessage('Minimum deposit is ₹100'),
 ];
 
 export const createDeposit = asyncHandler(async (req, res) => {

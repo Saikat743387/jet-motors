@@ -32,6 +32,9 @@ export default function Deposit() {
     if (!raw || !Number.isFinite(value) || value <= 0) {
       return toast.error('Enter a valid deposit amount');
     }
+    if (value < 100) {
+      return toast.error('Minimum deposit is ₹100');
+    }
     const rounded = Math.round(value * 100) / 100;
     setLoading(true);
     try {
@@ -52,6 +55,7 @@ export default function Deposit() {
         never purchased by depositing — tap <span className="font-semibold text-ink">Buy Now</span> on the plan
         afterward.
       </p>
+      <p className="text-sm font-semibold text-burgundy">Minimum deposit is ₹100</p>
 
       {selectedProduct ? (
         <div className="premium-card rounded-2xl p-5">
@@ -94,11 +98,12 @@ export default function Deposit() {
             inputMode="decimal"
             autoComplete="off"
             className="mt-1 w-full rounded-xl border border-line bg-ivory px-3 py-2.5 text-ink placeholder:text-muted outline-none focus:border-gold"
-            placeholder="Enter Amount"
+            placeholder="Enter Amount (Min ₹100)"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
         </label>
+        <p className="mt-1 text-xs text-muted">Minimum deposit is ₹100</p>
 
         <button
           type="button"
