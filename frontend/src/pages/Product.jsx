@@ -1,33 +1,53 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
-import ProductCard from '../components/ProductCard';
+import { useAuth } from '../context/AuthContext';
+import PurchasedPlanCard from '../components/PurchasedPlanCard';
 import EmptyState from '../components/EmptyState';
 
 export default function Product() {
-  const [products, setProducts] = useState([]);
+  const { refresh } = useAuth();
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api
-      .get('/products')
-      .then(({ data }) => setProducts(data.products))
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/me/products');
+      setRows(data.purchases || []);
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function handleClaimed() {
+    await load();
+    refresh().catch(() => {});
+  }
 
   return (
     <div>
-      <h1 className="font-display text-4xl">Products</h1>
-      <p className="mt-1 text-sm text-muted">Choose a plan. Prices are loaded from the server.</p>
+      <h1 className="font-display text-4xl">My Plans</h1>
+      <p className="mt-1 text-sm text-muted">Only the plans you have purchased appear here.</p>
       {loading ? (
         <p className="mt-8 text-muted">Loading plans…</p>
-      ) : products.length === 0 ? (
-        <div className="mt-6">
-          <EmptyState title="No plans available" hint="Please check back shortly." />
+      ) : rows.length === 0 ? (
+        <div className="mt-6 space-y-4">
+          <EmptyState title="No active plans" hint="You have not purchased any plan yet." />
+          <Link to="/" className="btn-primary block rounded-xl py-3 text-center font-semibold">
+            Browse Plans
+          </Link>
         </div>
       ) : (
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          {products.map((p) => (
-            <ProductCard key={p._id} product={p} />
+          {rows.map((row) => (
+            <PurchasedPlanCard key={row._id} row={row} onClaimed={handleClaimed} />
           ))}
         </div>
       )}

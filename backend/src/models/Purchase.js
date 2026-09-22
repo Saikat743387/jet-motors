@@ -14,6 +14,8 @@ const purchaseSchema = new mongoose.Schema(
     productName: { type: String, required: true },
     productImage: { type: String, default: '' },
     status: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active', index: true },
+    claimedDays: { type: Number, default: 0, min: 0 },
+    claimedTotal: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

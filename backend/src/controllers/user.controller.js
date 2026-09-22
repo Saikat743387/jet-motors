@@ -1,13 +1,42 @@
+import mongoose from 'mongoose';
 import { Purchase } from '../models/Purchase.js';
 import { Transaction } from '../models/Transaction.js';
+import { DailyClaim } from '../models/DailyClaim.js';
 import { SupportTicket } from '../models/SupportTicket.js';
 import { getSettings } from '../models/AppSettings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { transactionRef } from '../utils/ids.js';
+import { claimDailyIncome, describePurchaseClaim } from '../services/ledger.service.js';
 
 export const myProducts = asyncHandler(async (req, res) => {
-  const purchases = await Purchase.find({ userId: req.user._id }).sort({ createdAt: -1 });
-  res.json({ purchases });
+  const purchases = await Purchase.find({ userId: req.user._id }).sort({ createdAt: -1 }).lean();
+  const ids = purchases.map((p) => p._id);
+  const latestClaims = ids.length
+    ? await DailyClaim.aggregate([
+        { $match: { purchaseId: { $in: ids } } },
+        { $sort: { claimDate: -1 } },
+        { $group: { _id: '$purchaseId', lastClaimDate: { $first: '$claimDate' } } },
+      ])
+    : [];
+  const lastByPurchase = new Map(latestClaims.map((c) => [String(c._id), c.lastClaimDate]));
+  const now = new Date();
+  const rows = await Promise.all(
+    purchases.map(async (p) => {
+      const claim = await describePurchaseClaim({ user: req.user, purchase: p, now });
+      if (!claim.lastClaimDate) claim.lastClaimDate = lastByPurchase.get(String(p._id)) || null;
+      return { ...p, claim };
+    })
+  );
+  res.json({ purchases: rows });
+});
+
+export const claimPurchaseIncome = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid purchase' });
+  }
+  const result = await claimDailyIncome({ user: req.user, purchaseId: id, ip: req.ip });
+  res.json(result);
 });
 
 export const myTransactions = asyncHandler(async (req, res) => {

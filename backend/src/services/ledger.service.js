@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { User } from '../models/User.js';
 import { Product } from '../models/Product.js';
 import { Purchase } from '../models/Purchase.js';
+import { DailyClaim } from '../models/DailyClaim.js';
 import { Deposit } from '../models/Deposit.js';
 import { Withdrawal } from '../models/Withdrawal.js';
 import { BankAccount } from '../models/BankAccount.js';
@@ -297,6 +298,138 @@ export async function failOrCancelDeposit({ user, depositId, status, ip }) {
     ip,
   });
   return deposit;
+}
+
+export function claimDayKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function toPurchaseObject(purchase) {
+  return typeof purchase.toObject === 'function' ? purchase.toObject() : { ...purchase };
+}
+
+async function markPurchaseCompleted(purchaseId) {
+  await Purchase.findByIdAndUpdate(purchaseId, { $set: { status: 'completed' } });
+}
+
+export async function describePurchaseClaim({ user, purchase, now = new Date() }) {
+  const claimedDays = purchase.claimedDays || 0;
+  const claimedTotal = purchase.claimedTotal || 0;
+  const claimsRemaining = Math.max(0, Number(purchase.durationDays || 0) - claimedDays);
+  const todayKey = claimDayKey(now);
+
+  if (purchase.status !== 'active') {
+    return { canClaim: false, reason: purchase.status, claimedDays, claimedTotal, claimsRemaining, lastClaimDate: null, todayKey };
+  }
+  if (now < new Date(purchase.startDate)) {
+    return { canClaim: false, reason: 'not_started', claimedDays, claimedTotal, claimsRemaining, lastClaimDate: null, todayKey };
+  }
+  if (now >= new Date(purchase.endDate) || claimsRemaining <= 0 || claimedTotal + Number(purchase.dailyIncome) > Number(purchase.totalIncome)) {
+    return { canClaim: false, reason: 'completed', claimedDays, claimedTotal, claimsRemaining, lastClaimDate: null, todayKey };
+  }
+
+  const latest = await DailyClaim.findOne({ purchaseId: purchase._id }).sort({ claimDate: -1, createdAt: -1 });
+  const lastClaimDate = latest ? latest.claimDate : null;
+  if (lastClaimDate === todayKey) {
+    return { canClaim: false, reason: 'claimed_today', claimedDays, claimedTotal, claimsRemaining, lastClaimDate, todayKey };
+  }
+  return { canClaim: true, reason: null, claimedDays, claimedTotal, claimsRemaining, lastClaimDate, todayKey };
+}
+
+export async function claimDailyIncome({ user, purchaseId, now = new Date(), ip }) {
+  if (!purchaseId || !/^[0-9a-fA-F]{24}$/.test(String(purchaseId))) {
+    throw new ApiError(400, 'Invalid purchase');
+  }
+
+  // Ownership is enforced here: the purchase must belong to the authenticated user.
+  // A userId/productId from the request body is never trusted.
+  const purchase = await Purchase.findOne({ _id: purchaseId, userId: user._id });
+  if (!purchase) throw new ApiError(404, 'Purchase not found');
+  if (purchase.status !== 'active') throw new ApiError(400, 'This plan is no longer active');
+
+  const todayKey = claimDayKey(now);
+  if (now < new Date(purchase.startDate)) throw new ApiError(400, 'This plan has not started yet');
+
+  const claimedDays = purchase.claimedDays || 0;
+  const claimedTotal = purchase.claimedTotal || 0;
+  if (now >= new Date(purchase.endDate) || claimedDays >= Number(purchase.durationDays)) {
+    await markPurchaseCompleted(purchase._id);
+    throw new ApiError(400, 'This plan has completed');
+  }
+  if (claimedTotal + Number(purchase.dailyIncome) > Number(purchase.totalIncome)) {
+    await markPurchaseCompleted(purchase._id);
+    throw new ApiError(400, 'Income limit for this plan has been reached');
+  }
+
+  const already = await DailyClaim.exists({ purchaseId: purchase._id, claimDate: todayKey });
+  if (already) throw new ApiError(400, "Today's income has already been claimed");
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const [claim] = await DailyClaim.create(
+      [
+        {
+          userId: user._id,
+          purchaseId: purchase._id,
+          productId: purchase.productId,
+          claimDate: todayKey,
+          amount: purchase.dailyIncome,
+          status: 'success',
+        },
+      ],
+      { session }
+    );
+
+    await credit(session, user._id, purchase.dailyIncome);
+    await writeTxn(session, {
+      transactionId: transactionRef('INC'),
+      userId: user._id,
+      type: 'daily_income',
+      amount: purchase.dailyIncome,
+      status: 'success',
+      referenceId: purchase._id,
+      meta: { purchaseId: purchase._id, productName: purchase.productName, claimDate: todayKey },
+    });
+
+    const nextClaimedDays = claimedDays + 1;
+    const nextClaimedTotal = Math.round((claimedTotal + Number(purchase.dailyIncome)) * 100) / 100;
+    const finished =
+      nextClaimedDays >= Number(purchase.durationDays) ||
+      nextClaimedTotal >= Number(purchase.totalIncome) ||
+      now >= new Date(purchase.endDate);
+    const updated = await Purchase.findOneAndUpdate(
+      { _id: purchase._id },
+      {
+        $set: {
+          claimedDays: nextClaimedDays,
+          claimedTotal: nextClaimedTotal,
+          ...(finished ? { status: 'completed' } : {}),
+        },
+      },
+      { new: true, session }
+    );
+
+    await session.commitTransaction();
+    const freshUser = await User.findById(user._id);
+    await logActivity({
+      actorId: user._id,
+      actorRole: 'user',
+      action: 'income.claim',
+      targetType: 'purchase',
+      targetId: String(purchase._id),
+      details: { amount: purchase.dailyIncome, claimDate: todayKey },
+      ip,
+    });
+    return { purchase: toPurchaseObject(updated), claim: claim.toObject(), balance: freshUser.balance };
+  } catch (err) {
+    await session.abortTransaction();
+    // Unique { purchaseId, claimDate } index: concurrent same-day claim loses the race here.
+    if (err && err.code === 11000) throw new ApiError(400, "Today's income has already been claimed");
+    throw err;
+  } finally {
+    session.endSession();
+  }
 }
 
 export async function requestWithdrawal({ user, amount, ip }) {
