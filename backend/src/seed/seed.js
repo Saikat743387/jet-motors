@@ -123,11 +123,36 @@ export async function backfillDepositBalance() {
   if (migrated > 0) console.log(`Backfilled depositBalance for ${migrated} user(s)`);
 }
 
+export async function migratePlanNames() {
+  // Display-only rename: Plan 2->1, Plan 3->2, Plan 4->3
+  // Preserve order, prices, durations, daily/total income, product IDs, purchase logic
+  // Update by sortOrder+image to avoid cascading renames
+  const mappings = [
+    { filter: { sortOrder: 2, image: '/products/plan-2.svg' }, name: 'Plan 1' },
+    { filter: { sortOrder: 3, image: '/products/plan-3.svg' }, name: 'Plan 2' },
+    { filter: { sortOrder: 4, image: '/products/plan-4.svg' }, name: 'Plan 3' },
+  ];
+  for (const { filter, name } of mappings) {
+    const res = await Product.updateOne(filter, { $set: { name } });
+    if (res.modifiedCount > 0) console.log(`Migrated product sortOrder ${filter.sortOrder} -> ${name}`);
+  }
+  // Fallback for legacy products that may not have sortOrder/image as expected but have old names
+  // Use separate updates to avoid cascading (update Plan 4 first, then isolated)
+  await Product.updateMany({ name: 'Plan 4' }, { $set: { name: 'Plan 3' } });
+  // After Plan 4->3, old Plan 3 products would also be caught if we do Plan3->2 naively;
+  // So only update Plan 3 that still has original price/duration for old Plan 3 (sortOrder 3) via remaining
+  // To avoid double-rename, use image filter for fallback too
+  await Product.updateMany({ name: 'Plan 3', image: '/products/plan-3.svg' }, { $set: { name: 'Plan 2' } });
+  await Product.updateMany({ name: 'Plan 2', image: '/products/plan-2.svg' }, { $set: { name: 'Plan 1' } });
+}
+
 export async function seedIfEmpty() {
   const count = await Product.countDocuments();
   if (count === 0) {
     await Product.insertMany(DEFAULT_PRODUCTS);
     console.log('Seeded default products');
+  } else {
+    await migratePlanNames();
   }
 
   const settingsCount = await AppSettings.countDocuments();

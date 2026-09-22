@@ -20,7 +20,7 @@ import teamRoutes from './routes/team.routes.js';
 import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { publicSettings } from './controllers/user.controller.js';
-import { backfillDepositBalance, ensureAdmin, seedIfEmpty } from './seed/seed.js';
+import { backfillDepositBalance, ensureAdmin, migratePlanNames, seedIfEmpty } from './seed/seed.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -92,6 +92,7 @@ const start = async () => {
   await connectDb();
   await ensureAdmin();
   await seedIfEmpty();
+  await migratePlanNames();
   await backfillDepositBalance();
   app.listen(env.port, () => {
     console.log(`JET MOTORS API listening on :${env.port}`);
