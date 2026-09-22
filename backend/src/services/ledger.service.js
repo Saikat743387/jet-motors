@@ -107,42 +107,6 @@ async function creditCommissions(session, deposit, buyer) {
   }
 }
 
-async function activatePurchase(session, user, product, deposit) {
-  const startDate = new Date();
-  const endDate = new Date(startDate.getTime() + product.durationDays * 24 * 60 * 60 * 1000);
-  const [purchase] = await Purchase.create(
-    [
-      {
-        userId: user._id,
-        productId: product._id,
-        depositId: deposit._id,
-        price: product.price,
-        startDate,
-        endDate,
-        dailyIncome: product.dailyIncome,
-        totalIncome: product.totalIncome,
-        durationDays: product.durationDays,
-        productName: product.name,
-        productImage: product.image,
-        status: 'active',
-      },
-    ],
-    { session }
-  );
-
-  await writeTxn(session, {
-    transactionId: transactionRef('PUR'),
-    userId: user._id,
-    type: 'purchase',
-    amount: product.price,
-    status: 'success',
-    referenceId: purchase._id,
-    meta: { productName: product.name },
-  });
-
-  return purchase;
-}
-
 export async function createDepositIntent({ user, productId, claimedAmount }) {
   let product = null;
   let amount = Number(claimedAmount);
@@ -210,16 +174,16 @@ export async function confirmDepositServerSide({ user, depositId, paymentReferen
       }
     }
 
-    // Deposit Balance is the spendable purchase wallet. When the deposit was
-    // made specifically to buy a plan (product attached), the plan price is
-    // immediately applied to that purchase, so it must be netted out of
-    // depositBalance right here on the server. totalDeposit stays as the
-    // lifetime deposit/statistics field and is never used as spendable funds.
-    // Withdrawal Balance (balance) is never touched by a deposit or a purchase.
-    const depositCredit = product ? deposit.amount - product.price : deposit.amount;
+    // Deposit and Plan Purchase are two completely separate actions.
+    // A confirmed deposit ALWAYS becomes spendable Deposit Balance and NEVER
+    // activates a plan — even a deposit made for a product (the productId on
+    // the Deposit record is only the context/preset amount, not an auto-buy).
+    // The user performs a separate, explicit Buy Now action to purchase.
+    // totalDeposit stays as the lifetime deposit/statistics field.
+    // Withdrawal Balance (balance) is never touched by a deposit.
     await User.findOneAndUpdate(
       { _id: user._id },
-      { $inc: { depositBalance: depositCredit, totalDeposit: deposit.amount } },
+      { $inc: { depositBalance: deposit.amount, totalDeposit: deposit.amount } },
       { new: true, session }
     );
     await writeTxn(session, {
@@ -231,8 +195,6 @@ export async function confirmDepositServerSide({ user, depositId, paymentReferen
       referenceId: deposit._id,
       meta: { productId: deposit.productId },
     });
-
-    if (product) await activatePurchase(session, user, product, deposit);
 
     const freshUser = await User.findById(user._id).session(session);
     await creditCommissions(session, deposit, freshUser);

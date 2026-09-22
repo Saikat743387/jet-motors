@@ -50,12 +50,20 @@ export default function Deposit() {
   return (
     <div className="mx-auto max-w-lg space-y-5">
       <h1 className="font-display text-4xl">Deposit</h1>
+      <p className="text-sm text-muted">
+        Deposits only add to your <span className="font-semibold text-ink">Deposit Balance</span>. Plans are
+        never purchased by depositing — tap <span className="font-semibold text-ink">Buy Now</span> on the plan
+        afterward.
+      </p>
 
       {selectedProduct ? (
         <div className="premium-card rounded-2xl p-5">
           <p className="text-xs uppercase tracking-wider text-muted">Selected Product</p>
           <p className="mt-1 font-display text-3xl">{selectedProduct.name}</p>
           <p className="mt-2 text-sm text-muted">Price is taken from the product record, not typed by you.</p>
+          <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-xs text-gold-deep">
+            This deposit will NOT buy the plan. It only adds to your Deposit Balance — Buy Now after depositing.
+          </p>
         </div>
       ) : null}
 

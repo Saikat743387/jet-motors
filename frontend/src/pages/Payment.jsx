@@ -15,7 +15,7 @@ export default function Payment() {
     try {
       await api.post(`/deposits/${id}/simulate`, { paymentReference: `UPI-${Date.now()}` });
       await refresh();
-      toast.success('Payment verified');
+      toast.success('Payment verified — added to Deposit Balance');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Payment verification failed');
     } finally {
@@ -39,7 +39,8 @@ export default function Payment() {
       <div className="premium-card rounded-2xl p-6">
         <p className="text-sm text-muted">
           This sandbox confirms payment on the server. Balance and product activation are never
-          credited from a frontend “success” flag.
+          credited from a frontend “success” flag. Verifying adds only to your Deposit Balance —
+          it does not buy any plan.
         </p>
         <div className="mt-5 rounded-xl border border-dashed border-gold bg-parchment px-4 py-6 text-center">
           <p className="text-xs uppercase tracking-[0.25em] text-gold-deep">UPI / Gateway Placeholder</p>

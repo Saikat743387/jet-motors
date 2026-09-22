@@ -450,84 +450,15 @@ describe('End-to-end: deposit → purchase → claim', () => {
   });
 });
 
-describe('Deposit tagged with a product (buy a plan by paying)', () => {
-  async function depositForProduct(user, product) {
+describe('Deposit and Plan Purchase are separate actions', () => {
+  async function confirmDeposit(user, { productId = null, amount } = {}) {
     const { confirmDepositServerSide } = await import('../src/services/ledger.service.js');
     const { Deposit } = await import('../src/models/Deposit.js');
     const deposit = await Deposit.create({
       transactionId: `DEP-TEST-${Date.now()}-${Math.random()}`,
       userId: user._id,
-      productId: product._id,
-      amount: product.price,
-      status: 'pending',
-      paymentToken: 'PAY-TEST',
-    });
-    const confirmed = await confirmDepositServerSide({
-      user,
-      depositId: deposit._id,
-      paymentReference: 'UPI-TEST',
-      actorRole: 'system',
-      actorId: user._id,
-      ip: '127.0.0.1',
-    });
-    return { confirmed, deposit };
-  }
-
-  it('does not leave the plan price sitting in Deposit Balance', async () => {
-    const user = await createUser({ depositBalance: 0, balance: 0, signupBonus: 50 });
-    const product = await createProduct({ price: 540, dailyIncome: 12, totalIncome: 540, durationDays: 45 });
-
-    await depositForProduct(user, product);
-
-    const snapshot = await User.findById(user._id);
-    expect(snapshot.depositBalance).toBe(0);
-    expect(snapshot.balance).toBe(0);
-    expect(snapshot.totalDeposit).toBe(540);
-    expect(snapshot.signupBonus).toBe(50);
-  });
-
-  it('activates exactly one plan and does not credit the Withdrawal Balance', async () => {
-    const user = await createUser({ depositBalance: 0, balance: 0 });
-    const product = await createProduct({ price: 540, dailyIncome: 12, totalIncome: 540, durationDays: 45 });
-
-    await depositForProduct(user, product);
-
-    const purchases = await Purchase.find({ userId: user._id, productId: product._id });
-    expect(purchases).toHaveLength(1);
-    expect(purchases[0].status).toBe('active');
-    expect(purchases[0].price).toBe(540);
-    expect(purchases[0].dailyIncome).toBe(12);
-
-    const fresh = await User.findById(user._id);
-    expect(fresh.balance).toBe(0);
-    expect(fresh.depositBalance).toBe(0);
-  });
-
-  it('cannot re-buy the plan the user already paid the price for', async () => {
-    const user = await createUser({ depositBalance: 0, balance: 0 });
-    const product = await createProduct({ price: 540, dailyIncome: 12, totalIncome: 540, durationDays: 45 });
-
-    await depositForProduct(user, product);
-
-    await expect(
-      purchaseWithDepositBalance({ user, productId: product._id, ip: '127.0.0.1' })
-    ).rejects.toThrow('Insufficient deposit balance');
-
-    const fresh = await User.findById(user._id);
-    expect(fresh.depositBalance).toBe(0);
-    expect(fresh.balance).toBe(0);
-    expect(await Purchase.countDocuments({ userId: user._id })).toBe(1);
-  });
-
-  it('plain top-up (no product) still credits Deposit Balance', async () => {
-    const user = await createUser({ depositBalance: 0, balance: 0 });
-    const { confirmDepositServerSide } = await import('../src/services/ledger.service.js');
-    const { Deposit } = await import('../src/models/Deposit.js');
-    const deposit = await Deposit.create({
-      transactionId: `DEP-TEST-${Date.now()}-${Math.random()}`,
-      userId: user._id,
-      productId: null,
-      amount: 5000,
+      productId: productId || null,
+      amount,
       status: 'pending',
       paymentToken: 'PAY-TEST',
     });
@@ -539,11 +470,213 @@ describe('Deposit tagged with a product (buy a plan by paying)', () => {
       actorId: user._id,
       ip: '127.0.0.1',
     });
+    return deposit;
+  }
+
+  it('deposit ₹500 → depositBalance +₹500, no plan purchased', async () => {
+    const user = await createUser({ depositBalance: 0, balance: 0, signupBonus: 50 });
+
+    await confirmDeposit(user, { amount: 500 });
+
+    const fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(500);
+    expect(fresh.balance).toBe(0);
+    expect(fresh.totalDeposit).toBe(500);
+    expect(fresh.signupBonus).toBe(50);
+    expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+  });
+
+  it('plain top-up (no product) credits only Deposit Balance', async () => {
+    const user = await createUser({ depositBalance: 0, balance: 0 });
+
+    await confirmDeposit(user, { amount: 5000 });
 
     const fresh = await User.findById(user._id);
     expect(fresh.depositBalance).toBe(5000);
     expect(fresh.balance).toBe(0);
     expect(fresh.totalDeposit).toBe(5000);
+    expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+  });
+
+  it('deposit ₹540 for a ₹540 plan → depositBalance +₹540, NO plan purchased', async () => {
+    const user = await createUser({ depositBalance: 0, balance: 0 });
+    const product = await createProduct({ price: 540, dailyIncome: 12, totalIncome: 540, durationDays: 45 });
+
+    await confirmDeposit(user, { productId: product._id, amount: 540 });
+
+    const fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(540);
+    expect(fresh.balance).toBe(0);
+    expect(fresh.totalDeposit).toBe(540);
+    expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+  });
+
+  it('a deposit for a product stays fully spendable (no double counting), then explicit Buy Now spends it', async () => {
+    const user = await createUser({ depositBalance: 0, balance: 0 });
+    const product = await createProduct({ price: 540, dailyIncome: 12, totalIncome: 540, durationDays: 45 });
+
+    await confirmDeposit(user, { productId: product._id, amount: 540 });
+    let fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(540);
+    expect(fresh.balance).toBe(0);
+    expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+    expect(await Transaction.countDocuments({ userId: user._id, type: 'deposit' })).toBe(1);
+    expect(await Transaction.countDocuments({ userId: user._id, type: 'purchase' })).toBe(0);
+
+    // The only way a plan becomes active is the explicit Buy Now action.
+    await purchaseWithDepositBalance({ user, productId: product._id, ip: '127.0.0.1' });
+
+    fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(0);
+    expect(fresh.balance).toBe(0);
+    expect(fresh.totalDeposit).toBe(540);
+    const purchases = await Purchase.find({ userId: user._id });
+    expect(purchases).toHaveLength(1);
+    expect(purchases[0].status).toBe('active');
+    expect(purchases[0].price).toBe(540);
+    expect(purchases[0].dailyIncome).toBe(12);
+    // the buy does not create an extra deposit and no Withdrawal Balance credit
+    expect(await Transaction.countDocuments({ userId: user._id, type: 'deposit' })).toBe(1);
+    expect(await Transaction.countDocuments({ userId: user._id, type: 'purchase' })).toBe(1);
+  });
+
+  it('rejects a product-tagged deposit whose amount was tampered to differ from the server price', async () => {
+    const user = await createUser({ depositBalance: 0, balance: 0 });
+    const product = await createProduct({ price: 540 });
+    const { confirmDepositServerSide } = await import('../src/services/ledger.service.js');
+    const { Deposit } = await import('../src/models/Deposit.js');
+    const deposit = await Deposit.create({
+      transactionId: `DEP-TEST-${Date.now()}-${Math.random()}`,
+      userId: user._id,
+      productId: product._id,
+      amount: 100,
+      status: 'pending',
+      paymentToken: 'PAY-TEST',
+    });
+
+    await expect(
+      confirmDepositServerSide({
+        user,
+        depositId: deposit._id,
+        paymentReference: 'UPI-TEST',
+        actorRole: 'system',
+        actorId: user._id,
+        ip: '127.0.0.1',
+      })
+    ).rejects.toThrow('Deposit amount does not match current product price');
+
+    const fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(0);
+    expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+  });
+});
+
+describe('Insufficient Deposit Balance → redirect to Deposit → explicit Buy Now', () => {
+  async function confirmDeposit(user, amount) {
+    const { confirmDepositServerSide } = await import('../src/services/ledger.service.js');
+    const { Deposit } = await import('../src/models/Deposit.js');
+    const deposit = await Deposit.create({
+      transactionId: `DEP-TEST-${Date.now()}-${Math.random()}`,
+      userId: user._id,
+      productId: null,
+      amount,
+      status: 'pending',
+      paymentToken: 'PAY-TEST',
+    });
+    await confirmDepositServerSide({
+      user,
+      depositId: deposit._id,
+      paymentReference: 'UPI-TEST',
+      actorRole: 'system',
+      actorId: user._id,
+      ip: '127.0.0.1',
+    });
+  }
+
+  it('existing ₹200 + Buy ₹540 plan → no purchase, nothing deducted, Deposit Balance stays ₹200', async () => {
+    const user = await createUser({ depositBalance: 200, balance: 0 });
+    const product = await createProduct({ price: 540 });
+
+    await expect(
+      purchaseWithDepositBalance({ user, productId: product._id, ip: '127.0.0.1' })
+    ).rejects.toThrow('Insufficient deposit balance');
+
+    const fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(200);
+    expect(fresh.balance).toBe(0);
+    expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+    expect(await Transaction.countDocuments({ userId: user._id, type: 'purchase' })).toBe(0);
+  });
+
+  it('deposit ₹340 → Deposit Balance ₹540 but plan STILL not purchased; Buy Now again → purchased, balance ₹0', async () => {
+    const user = await createUser({ depositBalance: 200, balance: 0 });
+    const product = await createProduct({ price: 540, dailyIncome: 12, totalIncome: 540, durationDays: 45 });
+
+    // 1. User clicks Buy Now with ₹200 — insufficient, nothing is deducted.
+    await expect(
+      purchaseWithDepositBalance({ user, productId: product._id, ip: '127.0.0.1' })
+    ).rejects.toThrow('Insufficient deposit balance');
+    let fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(200);
+    expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+
+    // 2. User deposits ₹340 on the Deposit page.
+    await confirmDeposit(user, 340);
+    fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(540);
+    expect(fresh.balance).toBe(0);
+    // 3. Plan is still NOT purchased automatically even though balance is now sufficient.
+    expect(await Purchase.countDocuments({ userId: user._id, productId: product._id })).toBe(0);
+
+    // 4. User clicks Buy Now again.
+    await purchaseWithDepositBalance({ user, productId: product._id, ip: '127.0.0.1' });
+    fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(0);
+    expect(fresh.balance).toBe(0);
+    // totalDeposit is the lifetime deposit/statistics field — the seeded ₹200
+    // Deposit Balance was not deposited, so only the ₹340 deposit counts.
+    expect(fresh.totalDeposit).toBe(340);
+    expect(await Purchase.countDocuments({ userId: user._id, productId: product._id })).toBe(1);
+  });
+});
+
+describe('Server-side purchase safety', () => {
+  it('concurrent Buy requests cannot double-spend the Deposit Balance', async () => {
+    const user = await createUser({ depositBalance: 540, balance: 0 });
+    const product = await createProduct({ price: 540 });
+
+    const results = await Promise.allSettled([
+      purchaseWithDepositBalance({ user, productId: product._id, ip: '127.0.0.1' }),
+      purchaseWithDepositBalance({ user, productId: product._id, ip: '127.0.0.1' }),
+    ]);
+
+    const fulfilled = results.filter((r) => r.status === 'fulfilled');
+    const rejected = results.filter((r) => r.status === 'rejected');
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].reason.message).toBe('Insufficient deposit balance');
+
+    const fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(0);
+    expect(fresh.balance).toBe(0);
+    expect(await Purchase.countDocuments({ userId: user._id, productId: product._id })).toBe(1);
+  });
+
+  it('rejects unknown/bogus product ids — server price can never be bypassed', async () => {
+    const user = await createUser({ depositBalance: 1000 });
+    const fakeId = new mongoose.Types.ObjectId();
+
+    await expect(
+      purchaseWithDepositBalance({ user, productId: fakeId, ip: '127.0.0.1' })
+    ).rejects.toThrow('Product not available');
+
+    await expect(
+      purchaseWithDepositBalance({ user, productId: 'not-a-valid-id', ip: '127.0.0.1' })
+    ).rejects.toThrow('Invalid product');
+
+    const fresh = await User.findById(user._id);
+    expect(fresh.depositBalance).toBe(1000);
+    expect(fresh.balance).toBe(0);
     expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
   });
 });
