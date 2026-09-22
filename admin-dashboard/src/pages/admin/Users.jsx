@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import api from '../../services/api';
 import StatusBadge from '../../components/StatusBadge';
 import { formatDate, inr } from '../../utils/format';
-import { EmptyRow, Field, FilterBar, GhostBtn, Loading, PageTitle, PrimaryBtn, SelectInput, TableShell, Td, TextInput, Th, Modal } from './AdminUI';
+import { EmptyRow, Field, FilterBar, GhostBtn, Loading, PageTitle, PrimaryBtn, SelectInput, Td, TextInput, Th, Modal } from './AdminUI';
 
 const statusOptions = [
   { value: '', label: 'All statuses' },
@@ -22,19 +22,38 @@ export default function AdminUsers() {
   const [error, setError] = useState('');
   const limit = 20;
   const [menuFor, setMenuFor] = useState(null);
+  const [menuRect, setMenuRect] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [busy, setBusy] = useState('');
 
   useEffect(() => {
-    if (!menuFor) return;
+    if (!menuFor) {
+      setMenuRect(null);
+      return;
+    }
     function onDocDown(e) {
       const menuEl = document.querySelector(`[data-menu-id="${menuFor}"]`);
-      if (menuEl && !menuEl.contains(e.target)) setMenuFor(null);
+      const fixedMenu = document.querySelector(`[data-fixed-menu="${menuFor}"]`);
+      if (
+        menuEl && !menuEl.contains(e.target) &&
+        (!fixedMenu || !fixedMenu.contains(e.target))
+      ) setMenuFor(null);
     }
+    function updateRect() {
+      const el = document.querySelector(`[data-menu-id="${menuFor}"]`);
+      if (el) setMenuRect(el.getBoundingClientRect());
+    }
+    updateRect();
     document.addEventListener('mousedown', onDocDown);
-    return () => document.removeEventListener('mousedown', onDocDown);
+    window.addEventListener('resize', updateRect);
+    window.addEventListener('scroll', updateRect, true);
+    return () => {
+      document.removeEventListener('mousedown', onDocDown);
+      window.removeEventListener('resize', updateRect);
+      window.removeEventListener('scroll', updateRect, true);
+    };
   }, [menuFor]);
 
   async function permanentDelete() {
@@ -120,8 +139,8 @@ export default function AdminUsers() {
 
       {error ? <p className="rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</p> : null}
 
-      <div className="premium-card rounded-2xl">
-        <TableShell>
+      <div className="premium-card rounded-2xl overflow-visible">
+        <div className="overflow-x-auto" style={{ overflowY: 'visible' }}>
           <table className="min-w-full text-left text-sm">
             <thead className="bg-parchment">
               <tr>
@@ -156,7 +175,7 @@ export default function AdminUsers() {
                   <Td>{inr(u.totalPurchaseAmount ?? 0)}</Td>
                   <Td>{u.withdrawalCount ?? 0}</Td>
                   <Td>{inr(u.totalWithdrawal ?? 0)}</Td>
-                  <Td className="overflow-visible"><StatusBadge status={u.status} /><div data-menu-id={u._id} className="inline-block relative ml-2 align-middle"><GhostBtn className="px-1.5 py-1" aria-label={`Actions for ${u.userId}`} onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === u._id ? null : u._id); }}><MoreVertical size={16} /></GhostBtn>{menuFor === u._id ? <div className="absolute right-0 top-full z-20 mt-1 min-w-44 rounded-lg border border-line bg-card p-1 shadow-lg"><button type="button" className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-rose-700 hover:bg-rose-50" onClick={(e) => { e.stopPropagation(); setMenuFor(null); setDeleteTarget(u); setDeleteConfirm(''); setShowDelete(true); }}><Trash2 size={16} />Delete User</button></div> : null}</div></Td>
+                  <Td className="overflow-visible"><div className="flex items-center gap-2"><StatusBadge status={u.status} /><div data-menu-id={u._id} className="relative inline-flex"><button type="button" aria-label={`Actions for ${u.userId}`} onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === u._id ? null : u._id); }} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-burgundy/20 bg-white text-burgundy shadow-sm hover:bg-parchment focus:outline-none focus:ring-2 focus:ring-burgundy/20"><MoreVertical size={16} className="text-burgundy" /></button>{menuFor === u._id ? <div data-fixed-menu={u._id} className="fixed z-50 min-w-44 rounded-lg border border-line bg-card p-1 shadow-xl" style={menuRect ? { top: menuRect.bottom + 6, left: Math.max(8, menuRect.right - 176) } : { visibility: 'hidden', top: -9999, left: -9999 }}><button type="button" className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-rose-700 hover:bg-rose-50" onClick={(e) => { e.stopPropagation(); setMenuFor(null); setDeleteTarget(u); setDeleteConfirm(''); setShowDelete(true); }}><Trash2 size={16} />Delete User</button></div> : null}</div></div></Td>
                   <Td className="text-right">
                     <div className="flex items-center justify-end gap-3">
                       <Link to={`/admin/users/${u._id}`} className="font-semibold text-burgundy hover:underline">View</Link>
@@ -167,7 +186,7 @@ export default function AdminUsers() {
               ))}
             </tbody>
           </table>
-        </TableShell>
+        </div>
         <div className="flex items-center justify-between px-4 py-3 text-sm">
           <span className="text-muted">Page {page} of {totalPages} — {total} users</span>
           <div className="flex gap-2">
