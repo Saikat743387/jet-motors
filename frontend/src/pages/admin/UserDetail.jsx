@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import StatusBadge from '../../components/StatusBadge';
@@ -17,6 +17,7 @@ function Row({ label, value }) {
 
 export default function AdminUserDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
@@ -28,6 +29,8 @@ export default function AdminUserDetail() {
   const [newPwd, setNewPwd] = useState('');
   const [showEdit, setShowEdit] = useState(false);
   const [editMobile, setEditMobile] = useState('');
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
 
   async function load() {
     setError('');
@@ -89,6 +92,19 @@ export default function AdminUserDetail() {
     finally { setBusy(''); }
   }
 
+  async function permanentDelete() {
+    if (!data || deleteConfirm.trim() !== data.user.userId) {
+      return toast.error('Type the user ID to confirm permanent deletion');
+    }
+    setBusy('delete');
+    try {
+      await api.delete(`/admin/users/${id}`);
+      toast.success(`${data.user.userId} permanently deleted`);
+      navigate('/admin/users');
+    } catch (err) { toast.error(err.response?.data?.message || 'Delete failed'); }
+    finally { setBusy(''); }
+  }
+
   if (error) return <div className="premium-card rounded-2xl p-6 text-sm text-rose-700">{error}</div>;
   if (!data) return <Loading text="Loading user…" />;
   const { user, purchases = [], withdrawals = [], deposits = [] } = data;
@@ -105,6 +121,7 @@ export default function AdminUserDetail() {
             <PrimaryBtn onClick={() => setShowAdj(true)}>Adjust Balance</PrimaryBtn>
             <GhostBtn onClick={() => setShowPwd(true)}>Reset Password</GhostBtn>
             <GhostBtn onClick={() => setShowEdit(true)}>Edit</GhostBtn>
+            <GhostBtn className="border-rose-300 text-rose-700 hover:bg-rose-50" onClick={() => { setDeleteConfirm(''); setShowDelete(true); }}>Delete User</GhostBtn>
           </div>
         }
       />
@@ -202,6 +219,31 @@ export default function AdminUserDetail() {
         <div className="space-y-3 text-sm">
           <Field label="Mobile (10 digits, 6-9 start)"><TextInput value={editMobile} onChange={setEditMobile} placeholder={user.mobile} /></Field>
           <div className="flex gap-2"><PrimaryBtn onClick={saveEdit} disabled={busy === 'edit'}>Save</PrimaryBtn><GhostBtn onClick={() => setShowEdit(false)}>Cancel</GhostBtn></div>
+        </div>
+      </Modal>
+
+      <Modal open={showDelete} onClose={() => setShowDelete(false)} title="Permanently Delete User">
+        <div className="space-y-3 text-sm">
+          <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-rose-700">
+            You are about to <strong>permanently delete</strong>{' '}
+            <span className="font-semibold">{user.userId}</span> and <strong>all of their data</strong> —
+            purchases, deposits, withdrawals, transactions, daily income claims, wallet/ledger records,
+            referral/team records, bank details, tickets, and activity logs. This action{' '}
+            <strong>cannot be undone</strong>.
+          </p>
+          <Field label={`Type ${user.userId} to confirm`}>
+            <TextInput value={deleteConfirm} onChange={setDeleteConfirm} placeholder={user.userId} />
+          </Field>
+          <div className="flex gap-2">
+            <PrimaryBtn
+              className="bg-rose-700 hover:bg-rose-800"
+              disabled={busy === 'delete' || deleteConfirm.trim() !== user.userId}
+              onClick={permanentDelete}
+            >
+              {busy === 'delete' ? 'Deleting…' : 'Permanently Delete'}
+            </PrimaryBtn>
+            <GhostBtn onClick={() => setShowDelete(false)}>Cancel</GhostBtn>
+          </div>
         </div>
       </Modal>
     </div>

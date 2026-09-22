@@ -13,6 +13,10 @@ const COLLECTIONS = [
   'commissions',
   'activitylogs',
   'settings',
+  'withdrawals',
+  'referrals',
+  'bankaccounts',
+  'supporttickets',
 ];
 
 export async function connect() {

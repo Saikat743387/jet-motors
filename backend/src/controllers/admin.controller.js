@@ -13,6 +13,7 @@ import { AppSettings, getSettings } from '../models/AppSettings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/apiError.js';
 import { adminUpdateDeposit, adminUpdateWithdrawal, confirmDepositServerSide } from '../services/ledger.service.js';
+import { deleteUserPermanently } from '../services/deleteUser.service.js';
 import { logActivity } from '../utils/logger.js';
 
 function escapeRegex(str) {
@@ -512,6 +513,14 @@ export const adjustBalanceAdmin = asyncHandler(async (req, res) => {
   } finally {
     session.endSession();
   }
+});
+
+export const deleteUserAdmin = asyncHandler(async (req, res) => {
+  const result = await deleteUserPermanently({ admin: req.user, userId: req.params.id, ip: req.ip });
+  res.json({
+    message: `User ${result.userId} and all associated data permanently deleted`,
+    result,
+  });
 });
 
 export const resetPasswordAdmin = asyncHandler(async (req, res) => {

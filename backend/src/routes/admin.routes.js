@@ -9,6 +9,7 @@ import {
   createProduct,
   dashboard,
   deleteProduct,
+  deleteUserAdmin,
   getSettingsAdmin,
   getUser,
   getWithdrawalAdmin,
@@ -54,6 +55,7 @@ router.patch('/users/:id', updateUserAdmin);
 router.patch('/users/:id/toggle', toggleUser);
 router.post('/users/:id/adjust-balance', adjustBalanceAdmin);
 router.post('/users/:id/reset-password', resetPasswordAdmin);
+router.delete('/users/:id', deleteUserAdmin);
 
 router.get('/products', listAllProducts);
 router.post('/products', createProduct);
