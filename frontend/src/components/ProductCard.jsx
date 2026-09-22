@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { inr } from '../utils/format';
 
 export default function ProductCard({ product }) {
@@ -38,10 +39,11 @@ export default function ProductCard({ product }) {
         </div>
         <button
           type="button"
-          className="btn-buy mt-4"
+          className="btn-buy mt-4 gap-1.5"
           onClick={() => navigate(`/deposit?productId=${product._id}`)}
         >
-          BUY
+          <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+          Buy Now
         </button>
       </div>
     </article>
