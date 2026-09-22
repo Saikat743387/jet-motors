@@ -112,6 +112,17 @@ export async function ensureAdmin() {
   return admin;
 }
 
+export async function backfillDepositBalance() {
+  // One-time lazy migration: the spendable deposit wallet did not exist before,
+  // and nothing ever deducted from deposits, so unspent wallet == lifetime deposits.
+  const res = await User.updateMany(
+    { depositBalance: { $exists: false } },
+    [{ $set: { depositBalance: { $ifNull: ['$totalDeposit', 0] } } }]
+  );
+  const migrated = res.modifiedCount || 0;
+  if (migrated > 0) console.log(`Backfilled depositBalance for ${migrated} user(s)`);
+}
+
 export async function seedIfEmpty() {
   const count = await Product.countDocuments();
   if (count === 0) {

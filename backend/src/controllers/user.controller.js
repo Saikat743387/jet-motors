@@ -6,7 +6,7 @@ import { SupportTicket } from '../models/SupportTicket.js';
 import { getSettings } from '../models/AppSettings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { transactionRef } from '../utils/ids.js';
-import { claimDailyIncome, describePurchaseClaim } from '../services/ledger.service.js';
+import { claimDailyIncome, describePurchaseClaim, purchaseWithDepositBalance } from '../services/ledger.service.js';
 
 export const myProducts = asyncHandler(async (req, res) => {
   const purchases = await Purchase.find({ userId: req.user._id }).sort({ createdAt: -1 }).lean();
@@ -28,6 +28,15 @@ export const myProducts = asyncHandler(async (req, res) => {
     })
   );
   res.json({ purchases: rows });
+});
+
+export const createDirectPurchase = asyncHandler(async (req, res) => {
+  const { productId } = req.body || {};
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    return res.status(400).json({ message: 'Invalid product' });
+  }
+  const result = await purchaseWithDepositBalance({ user: req.user, productId, ip: req.ip });
+  res.status(201).json(result);
 });
 
 export const claimPurchaseIncome = asyncHandler(async (req, res) => {

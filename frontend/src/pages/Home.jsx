@@ -21,7 +21,7 @@ export default function Home() {
           <div className="min-w-0 rounded-2xl bg-white/10 px-4 py-4 border border-white/15">
             <p className="text-xs uppercase tracking-wider text-white/70">Deposit Balance</p>
             <p className="mt-1 truncate font-display text-2xl text-white sm:text-3xl">
-              {inr((user?.totalDeposit || 0) + (user?.signupBonus || 0))}
+              {inr((user?.depositBalance ?? user?.totalDeposit ?? 0) + (user?.signupBonus || 0))}
             </p>
             <Link
               to="/deposit"

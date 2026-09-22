@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
     inviteCode: { type: String, required: true, unique: true, index: true },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     balance: { type: Number, default: 0, min: 0 },
+    depositBalance: { type: Number, default: 0, min: 0 },
     signupBonus: { type: Number, default: 0, min: 0 },
     totalDeposit: { type: Number, default: 0 },
     totalWithdrawal: { type: Number, default: 0 },

@@ -210,7 +210,7 @@ export async function confirmDepositServerSide({ user, depositId, paymentReferen
       }
     }
 
-    await credit(session, user._id, deposit.amount, { totalDeposit: deposit.amount });
+    await credit(session, user._id, deposit.amount, { totalDeposit: deposit.amount, depositBalance: deposit.amount });
     await writeTxn(session, {
       transactionId: deposit.transactionId,
       userId: user._id,
@@ -429,6 +429,85 @@ export async function claimDailyIncome({ user, purchaseId, now = new Date(), ip 
     throw err;
   } finally {
     session.endSession();
+  }
+}
+
+export async function purchaseWithDepositBalance({ user, productId, ip }) {
+  if (!productId || !/^[0-9a-fA-F]{24}$/.test(String(productId))) {
+    throw new ApiError(400, 'Invalid product');
+  }
+  const product = await Product.findById(productId);
+  if (!product || !product.isActive) throw new ApiError(404, 'Product not available');
+  const amount = Number(product.price);
+  if (!Number.isFinite(amount) || amount <= 0) throw new ApiError(400, 'Invalid product price');
+
+  // Retry on transient transaction conflicts (e.g. two concurrent purchases
+  // racing on the same wallet). The debit is conditional ($gte), so a retry
+  // can never overdraw: the loser cleanly observes insufficient funds.
+  for (let attempt = 1; ; attempt += 1) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      const debited = await User.findOneAndUpdate(
+        { _id: user._id, depositBalance: { $gte: amount } },
+        { $inc: { depositBalance: -amount } },
+        { new: true, session }
+      );
+      if (!debited) throw new ApiError(400, 'Insufficient deposit balance');
+
+      const startDate = new Date();
+      const endDate = new Date(startDate.getTime() + product.durationDays * 24 * 60 * 60 * 1000);
+      const [purchase] = await Purchase.create(
+        [
+          {
+            userId: user._id,
+            productId: product._id,
+            depositId: null,
+            price: product.price,
+            startDate,
+            endDate,
+            dailyIncome: product.dailyIncome,
+            totalIncome: product.totalIncome,
+            durationDays: product.durationDays,
+            productName: product.name,
+            productImage: product.image,
+            status: 'active',
+          },
+        ],
+        { session }
+      );
+
+      await writeTxn(session, {
+        transactionId: transactionRef('PUR'),
+        userId: user._id,
+        type: 'purchase',
+        amount: product.price,
+        status: 'success',
+        referenceId: purchase._id,
+        meta: { productName: product.name, source: 'deposit_balance' },
+      });
+
+      await session.commitTransaction();
+      await logActivity({
+        actorId: user._id,
+        actorRole: 'user',
+        action: 'purchase.direct',
+        targetType: 'purchase',
+        targetId: String(purchase._id),
+        details: { amount: product.price, productName: product.name },
+        ip,
+      });
+      return { purchase: toPurchaseObject(purchase), depositBalance: debited.depositBalance };
+    } catch (err) {
+      await session.abortTransaction();
+      const transient =
+        Array.isArray(err.errorLabels) &&
+        err.errorLabels.some((label) => label === 'TransientTransactionError' || label === 'UnknownTransactionCommitResult');
+      if (transient && attempt < 3) continue;
+      throw err;
+    } finally {
+      session.endSession();
+    }
   }
 }
 

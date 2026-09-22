@@ -1,9 +1,40 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { inr } from '../utils/format';
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
+  const { user, refresh } = useAuth();
+  const [buying, setBuying] = useState(false);
+
+  async function buyNow() {
+    if (buying) return;
+    const price = Number(product.price);
+    const depositWallet = Number(user?.depositBalance ?? 0);
+    if (!(depositWallet >= price)) {
+      navigate(`/deposit?productId=${product._id}`);
+      return;
+    }
+    setBuying(true);
+    try {
+      await api.post('/me/purchases', { productId: product._id });
+      toast.success(`${product.name} purchased successfully`);
+      await refresh().catch(() => {});
+      navigate('/product');
+    } catch (err) {
+      if (err.response?.status === 400) {
+        navigate(`/deposit?productId=${product._id}`);
+      } else {
+        toast.error(err.response?.data?.message || 'Could not complete purchase');
+      }
+    } finally {
+      setBuying(false);
+    }
+  }
 
   return (
     <article className="premium-card overflow-hidden rounded-2xl">
@@ -40,7 +71,8 @@ export default function ProductCard({ product }) {
         <button
           type="button"
           className="btn-buy mt-4 gap-1.5"
-          onClick={() => navigate(`/deposit?productId=${product._id}`)}
+          disabled={buying}
+          onClick={buyNow}
         >
           <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
           Buy Now
