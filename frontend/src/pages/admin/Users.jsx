@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import StatusBadge from '../../components/StatusBadge';
@@ -13,6 +13,7 @@ const statusOptions = [
 ];
 
 export default function AdminUsers() {
+  const navigate = useNavigate();
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('');
   const [users, setUsers] = useState(null);
@@ -113,7 +114,7 @@ export default function AdminUsers() {
               ) : users.length === 0 ? (
                 <EmptyRow colSpan={12} message={error ? error : 'No users found'} />
               ) : users.map((u) => (
-                <tr key={u._id} className="hover:bg-parchment/50">
+                <tr key={u._id} className="cursor-pointer hover:bg-parchment/50" onClick={() => navigate(`/admin/users/${u._id}`)}>
                   <Td className="font-semibold text-burgundy">{u.userId}</Td>
                   <Td>{u.mobile}</Td>
                   <Td className="text-muted">{formatDate(u.createdAt)}</Td>
@@ -127,8 +128,8 @@ export default function AdminUsers() {
                   <Td><StatusBadge status={u.status} /></Td>
                   <Td className="text-right">
                     <div className="flex items-center justify-end gap-3">
-                      <Link to={`/admin/users/${u._id}`} className="font-semibold text-burgundy hover:underline">View</Link>
-                      <GhostBtn className="px-2 py-1 text-xs" onClick={() => toggle(u._id)}>{u.status === 'blocked' ? 'Unblock' : 'Block'}</GhostBtn>
+                      <Link to={`/admin/users/${u._id}`} className="font-semibold text-burgundy hover:underline" onClick={(e) => e.stopPropagation()}>View</Link>
+                      <GhostBtn className="px-2 py-1 text-xs" onClick={(e) => { e.stopPropagation(); toggle(u._id); }}>{u.status === 'blocked' ? 'Unblock' : 'Block'}</GhostBtn>
                     </div>
                   </Td>
                 </tr>
