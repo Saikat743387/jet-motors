@@ -85,7 +85,7 @@ export default function ProductCard({ product }) {
 function Meta({ label, value, valueClassName = 'text-ink' }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-ink">{label}</p>
+      <p className="text-xs uppercase tracking-wider text-black">{label}</p>
       <p className={`font-semibold ${valueClassName}`}>{value}</p>
     </div>
   );
