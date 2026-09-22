@@ -17,7 +17,7 @@ const DEFAULT_PRODUCTS = [
     sortOrder: 1,
   },
   {
-    name: 'Plan 2',
+    name: 'Plan 1',
     image: '/products/plan-2.svg',
     durationDays: 100,
     dailyIncome: 455,
@@ -27,7 +27,7 @@ const DEFAULT_PRODUCTS = [
     sortOrder: 2,
   },
   {
-    name: 'Plan 3',
+    name: 'Plan 2',
     image: '/products/plan-3.svg',
     durationDays: 100,
     dailyIncome: 1212,
@@ -37,7 +37,7 @@ const DEFAULT_PRODUCTS = [
     sortOrder: 3,
   },
   {
-    name: 'Plan 4',
+    name: 'Plan 3',
     image: '/products/plan-4.svg',
     durationDays: 100,
     dailyIncome: 2575,
