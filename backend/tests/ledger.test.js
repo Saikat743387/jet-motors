@@ -6,7 +6,7 @@ import { Product } from '../src/models/Product.js';
 import { Purchase } from '../src/models/Purchase.js';
 import { DailyClaim } from '../src/models/DailyClaim.js';
 import { Transaction } from '../src/models/Transaction.js';
-import { purchaseWithDepositBalance, claimDailyIncome } from '../src/services/ledger.service.js';
+import { purchaseWithDepositBalance, claimDailyIncome, createDepositIntent } from '../src/services/ledger.service.js';
 
 beforeAll(async () => {
   await connect();
@@ -678,5 +678,54 @@ describe('Server-side purchase safety', () => {
     expect(fresh.depositBalance).toBe(1000);
     expect(fresh.balance).toBe(0);
     expect(await Purchase.countDocuments({ userId: user._id })).toBe(0);
+  });
+});
+
+describe('Deposit amount validation (server-side, never trust the frontend)', () => {
+  async function intentFor(user, claimedAmount) {
+    return createDepositIntent({ user, productId: null, claimedAmount });
+  }
+
+  it('rejects a zero amount', async () => {
+    const user = await createUser();
+    await expect(intentFor(user, 0)).rejects.toThrow('Enter a valid deposit amount');
+    await expect(intentFor(user, '0')).rejects.toThrow('Enter a valid deposit amount');
+  });
+
+  it('rejects a negative amount', async () => {
+    const user = await createUser();
+    await expect(intentFor(user, -100)).rejects.toThrow('Enter a valid deposit amount');
+  });
+
+  it('rejects missing/empty amounts', async () => {
+    const user = await createUser();
+    await expect(intentFor(user, undefined)).rejects.toThrow('Enter a valid deposit amount');
+    await expect(intentFor(user, '')).rejects.toThrow('Enter a valid deposit amount');
+  });
+
+  it('rejects malformed/non-numeric amounts', async () => {
+    const user = await createUser();
+    await expect(intentFor(user, 'abc')).rejects.toThrow('Enter a valid deposit amount');
+    await expect(intentFor(user, '10.5.2')).rejects.toThrow('Enter a valid deposit amount');
+  });
+
+  it('accepts a decimal amount', async () => {
+    const user = await createUser();
+    const intent = await intentFor(user, 100.5);
+    expect(intent.amount).toBe(100.5);
+    const { Deposit } = await import('../src/models/Deposit.js');
+    const deposit = await Deposit.findById(intent.depositId);
+    expect(deposit.amount).toBe(100.5);
+    expect(deposit.productId).toBeNull();
+  });
+
+  it('accepts a custom amount not present in the preset buttons', async () => {
+    const user = await createUser();
+    const intent = await intentFor(user, 237);
+    expect(intent.amount).toBe(237);
+    const { Deposit } = await import('../src/models/Deposit.js');
+    const deposit = await Deposit.findById(intent.depositId);
+    expect(deposit.amount).toBe(237);
+    expect(deposit.productId).toBeNull();
   });
 });
