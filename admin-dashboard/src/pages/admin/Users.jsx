@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MoreVertical, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -22,7 +22,6 @@ export default function AdminUsers() {
   const [error, setError] = useState('');
   const limit = 20;
   const [menuFor, setMenuFor] = useState(null);
-  const menuRef = useRef(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -31,7 +30,8 @@ export default function AdminUsers() {
   useEffect(() => {
     if (!menuFor) return;
     function onDocDown(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuFor(null);
+      const menuEl = document.querySelector(`[data-menu-id="${menuFor}"]`);
+      if (menuEl && !menuEl.contains(e.target)) setMenuFor(null);
     }
     document.addEventListener('mousedown', onDocDown);
     return () => document.removeEventListener('mousedown', onDocDown);
@@ -161,7 +161,7 @@ export default function AdminUsers() {
                     <div className="flex items-center justify-end gap-3">
                       <Link to={`/admin/users/${u._id}`} className="font-semibold text-burgundy hover:underline">View</Link>
                       <GhostBtn className="px-2 py-1 text-xs" onClick={() => toggle(u._id)}>{u.status === 'blocked' ? 'Unblock' : 'Block'}</GhostBtn>
-                      <div ref={menuFor === u._id ? menuRef : undefined} className="relative">
+                      <div data-menu-id={u._id} className="relative">
                         <GhostBtn
                           className="px-1.5 py-1"
                           aria-label={`Actions for ${u.userId}`}
