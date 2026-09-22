@@ -210,7 +210,18 @@ export async function confirmDepositServerSide({ user, depositId, paymentReferen
       }
     }
 
-    await credit(session, user._id, deposit.amount, { totalDeposit: deposit.amount, depositBalance: deposit.amount });
+    // Deposit Balance is the spendable purchase wallet. When the deposit was
+    // made specifically to buy a plan (product attached), the plan price is
+    // immediately applied to that purchase, so it must be netted out of
+    // depositBalance right here on the server. totalDeposit stays as the
+    // lifetime deposit/statistics field and is never used as spendable funds.
+    // Withdrawal Balance (balance) is never touched by a deposit or a purchase.
+    const depositCredit = product ? deposit.amount - product.price : deposit.amount;
+    await User.findOneAndUpdate(
+      { _id: user._id },
+      { $inc: { depositBalance: depositCredit, totalDeposit: deposit.amount } },
+      { new: true, session }
+    );
     await writeTxn(session, {
       transactionId: deposit.transactionId,
       userId: user._id,
