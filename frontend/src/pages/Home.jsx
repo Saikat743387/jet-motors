@@ -16,9 +16,8 @@ export default function Home() {
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-3xl bg-[#1E1B4B] px-5 py-6 text-white border border-[#1E1B4B]">
-        <div className="flex items-center justify-center gap-2.5">
-          <img src="/logo.jpg" alt="JET MOTORS" className="h-8 w-8 rounded-lg object-cover" />
-          <p className="text-xs uppercase tracking-[0.32em] text-emerald-400">JET MOTORS</p>
+        <div className="flex justify-center">
+          <img src="/logo.png" alt="JET MOTORS" className="h-20 w-20 object-contain" />
         </div>
         <div className="mt-6 grid grid-cols-2 gap-3">
           <div className="min-w-0 rounded-2xl bg-white/10 px-4 py-4 border border-white/15">
