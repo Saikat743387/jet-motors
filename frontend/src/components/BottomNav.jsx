@@ -10,7 +10,7 @@ const items = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-card/95 shadow-[0_-8px_24px_rgba(16,24,40,0.08)] backdrop-blur pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-card shadow-[0_-8px_24px_rgba(16,24,40,0.08)] pb-[env(safe-area-inset-bottom)] md:hidden">
       <div className="mx-auto grid max-w-lg grid-cols-4">
         {items.map((item) => {
           const Icon = item.icon;
