@@ -17,7 +17,7 @@ const DEFAULT_PRODUCTS = [
     sortOrder: 1,
   },
   {
-    name: 'Plan 1',
+    name: 'Plan 2',
     image: '/products/plan-2.svg',
     durationDays: 100,
     dailyIncome: 455,
@@ -27,7 +27,7 @@ const DEFAULT_PRODUCTS = [
     sortOrder: 2,
   },
   {
-    name: 'Plan 2',
+    name: 'Plan 3',
     image: '/products/plan-3.svg',
     durationDays: 100,
     dailyIncome: 1212,
@@ -37,7 +37,7 @@ const DEFAULT_PRODUCTS = [
     sortOrder: 3,
   },
   {
-    name: 'Plan 3',
+    name: 'Plan 4',
     image: '/products/plan-4.svg',
     durationDays: 100,
     dailyIncome: 2575,
@@ -124,13 +124,13 @@ export async function backfillDepositBalance() {
 }
 
 export async function migratePlanNames() {
-  // Display-only rename: Plan 2->1, Plan 3->2, Plan 4->3
+  // Display-only rename: preserve order Plan 1->1, Plan 2->2, Plan 3->3, Plan 4->4
   // Preserve order, prices, durations, daily/total income, product IDs, purchase logic
   // Update by sortOrder+image to avoid cascading renames
   const mappings = [
-    { filter: { sortOrder: 2, image: '/products/plan-2.svg' }, name: 'Plan 1' },
-    { filter: { sortOrder: 3, image: '/products/plan-3.svg' }, name: 'Plan 2' },
-    { filter: { sortOrder: 4, image: '/products/plan-4.svg' }, name: 'Plan 3' },
+    { filter: { sortOrder: 2, image: '/products/plan-2.svg' }, name: 'Plan 2' },
+    { filter: { sortOrder: 3, image: '/products/plan-3.svg' }, name: 'Plan 3' },
+    { filter: { sortOrder: 4, image: '/products/plan-4.svg' }, name: 'Plan 4' },
   ];
   for (const { filter, name } of mappings) {
     const res = await Product.updateOne(filter, { $set: { name } });
@@ -138,12 +138,12 @@ export async function migratePlanNames() {
   }
   // Fallback for legacy products that may not have sortOrder/image as expected but have old names
   // Use separate updates to avoid cascading (update Plan 4 first, then isolated)
-  await Product.updateMany({ name: 'Plan 4' }, { $set: { name: 'Plan 3' } });
-  // After Plan 4->3, old Plan 3 products would also be caught if we do Plan3->2 naively;
+  await Product.updateMany({ name: 'Plan 4' }, { $set: { name: 'Plan 4' } });
+  // After Plan 4, old Plan 3 products would also be caught if we do Plan3->2 naively;
   // So only update Plan 3 that still has original price/duration for old Plan 3 (sortOrder 3) via remaining
   // To avoid double-rename, use image filter for fallback too
-  await Product.updateMany({ name: 'Plan 3', image: '/products/plan-3.svg' }, { $set: { name: 'Plan 2' } });
-  await Product.updateMany({ name: 'Plan 2', image: '/products/plan-2.svg' }, { $set: { name: 'Plan 1' } });
+  await Product.updateMany({ name: 'Plan 3', image: '/products/plan-3.svg' }, { $set: { name: 'Plan 3' } });
+  await Product.updateMany({ name: 'Plan 2', image: '/products/plan-2.svg' }, { $set: { name: 'Plan 2' } });
 }
 
 export async function migratePlan1Values() {
