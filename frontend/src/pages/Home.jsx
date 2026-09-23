@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import ProductCard from '../components/ProductCard';
@@ -15,6 +16,16 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <a
+          href="/downloads/jet-motors.apk"
+          download="jet-motors.apk"
+          aria-label="Download JET MOTORS APK"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-white text-burgundy shadow-sm hover:bg-parchment"
+        >
+          <Download size={18} />
+        </a>
+      </div>
       <section className="overflow-hidden rounded-3xl bg-[#1E1B4B] px-5 py-6 text-white border border-[#1E1B4B]">
         <div className="flex justify-center">
           <img src="/logo.png" alt="JET MOTORS" className="h-20 w-20 object-contain" />

@@ -6,3 +6,6 @@ uploads
 .DS_Store
 .vercel
 .env*
+*.jks
+*.keystore
+keystore.properties

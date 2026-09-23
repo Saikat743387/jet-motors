@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Clock } from 'lucide-react';
 import api from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 import EmptyState from '../components/EmptyState';
@@ -30,7 +31,11 @@ export default function MyProducts() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 border-t border-line px-4 py-4 text-sm">
-                <Meta label="Duration" value={`${row.durationDays} Days`} />
+                <Meta
+                  label="Duration"
+                  value={`${row.durationDays} Days`}
+                  icon={<Clock size={14} className="text-[#2563EB]" aria-hidden="true" />}
+                />
                 <Meta label="Daily Income" value={inr(row.dailyIncome)} />
                 <Meta label="Total Income" value={inr(row.totalIncome)} />
                 <Meta label="Start date" value={formatDate(row.startDate)} />
@@ -44,11 +49,14 @@ export default function MyProducts() {
   );
 }
 
-function Meta({ label, value }) {
+function Meta({ label, value, icon = null }) {
   return (
     <div>
       <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
-      <p className="font-semibold">{value}</p>
+      <p className={`font-semibold ${icon ? 'flex items-center gap-1' : ''}`}>
+        {icon}
+        {value}
+      </p>
     </div>
   );
 }

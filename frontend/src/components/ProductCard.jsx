@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Clock, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -63,7 +63,12 @@ export default function ProductCard({ product }) {
       <div className="px-4 py-4">
         <h3 className="font-display text-xl text-ink">{product.name}</h3>
         <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-          <Meta label="Duration" value={`${product.durationDays} Days`} valueClassName="text-[#15803D]" />
+          <Meta
+            label="Duration"
+            value={`${product.durationDays} Days`}
+            valueClassName="text-[#15803D]"
+            icon={<Clock size={14} className="text-[#2563EB]" aria-hidden="true" />}
+          />
           <Meta label="Daily Income" value={inr(product.dailyIncome)} valueClassName="text-[#15803D]" />
           <Meta label="Total Income" value={inr(product.totalIncome)} valueClassName="text-[#15803D]" />
           <Meta label="Price" value={inr(product.price)} valueClassName="text-[#15803D] underline underline-offset-4 decoration-2" />
@@ -82,11 +87,14 @@ export default function ProductCard({ product }) {
   );
 }
 
-function Meta({ label, value, valueClassName = 'text-ink' }) {
+function Meta({ label, value, valueClassName = 'text-ink', icon = null }) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wider text-black">{label}</p>
-      <p className={`font-semibold ${valueClassName}`}>{value}</p>
+      <p className={`font-semibold ${icon ? 'flex items-center gap-1' : ''} ${valueClassName}`}>
+        {icon}
+        {value}
+      </p>
     </div>
   );
 }

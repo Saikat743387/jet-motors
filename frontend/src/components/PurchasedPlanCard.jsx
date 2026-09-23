@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import StatusBadge from './StatusBadge';
@@ -35,7 +36,12 @@ export default function PurchasedPlanCard({ row, onClaimed }) {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 border-t border-line px-4 py-4 text-sm">
-        <Meta label="Duration" value={`${row.durationDays} Days`} valueClassName="text-[#15803D]" />
+        <Meta
+          label="Duration"
+          value={`${row.durationDays} Days`}
+          valueClassName="text-[#15803D]"
+          icon={<Clock size={14} className="text-[#2563EB]" aria-hidden="true" />}
+        />
         <Meta label="Daily Income" value={inr(row.dailyIncome)} valueClassName="text-[#15803D]" />
         <Meta label="Total Income" value={inr(row.totalIncome)} valueClassName="text-[#15803D]" />
         <Meta label="Price" value={inr(row.price)} valueClassName="text-[#15803D]" />
@@ -68,11 +74,14 @@ export default function PurchasedPlanCard({ row, onClaimed }) {
   );
 }
 
-function Meta({ label, value, valueClassName = 'text-ink' }) {
+function Meta({ label, value, valueClassName = 'text-ink', icon = null }) {
   return (
     <div>
       <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
-      <p className={`font-semibold ${valueClassName}`}>{value}</p>
+      <p className={`font-semibold ${icon ? 'flex items-center gap-1' : ''} ${valueClassName}`}>
+        {icon}
+        {value}
+      </p>
     </div>
   );
 }

@@ -1,0 +1,12 @@
+{
+  "appId": "com.jetmotors.app",
+  "appName": "JET MOTORS",
+  "webDir": "dist",
+  "server": {
+    "url": "https://frontend-brown-ten-axamy4qhcp.vercel.app",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
