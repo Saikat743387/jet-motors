@@ -44,6 +44,12 @@ export function AuthProvider({ children }) {
     const { data } = await api.post('/auth/register', payload);
     localStorage.setItem('jm_token', data.token);
     setUser(data.user);
+    try {
+      const { data: me } = await api.get('/auth/me');
+      if (me?.user) setUser(me.user);
+    } catch {
+      /* keep register response as fallback */
+    }
     return data.user;
   }
 
