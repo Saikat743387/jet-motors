@@ -37,7 +37,7 @@ export default function AppLayout() {
             })}
           </nav>
         </aside>
-        <main className="min-w-0 flex-1 px-4 py-5 safe-bottom md:pb-8">
+        <main className="min-w-0 flex-1 px-4 pt-5 safe-bottom md:pb-8">
           <Outlet />
         </main>
       </div>
