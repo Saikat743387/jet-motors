@@ -3,7 +3,7 @@ import { Clock } from 'lucide-react';
 import api from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 import EmptyState from '../components/EmptyState';
-import { assetUrl, formatDate, inr } from '../utils/format';
+import { assetUrl, durationLabel, formatDate, inr } from '../utils/format';
 
 export default function MyProducts() {
   const [rows, setRows] = useState([]);
@@ -33,7 +33,7 @@ export default function MyProducts() {
               <div className="grid grid-cols-2 gap-3 border-t border-line px-4 py-4 text-sm">
                 <Meta
                   label="Duration"
-                  value={`${row.durationDays} Days`}
+                  value={durationLabel(row)}
                   icon={<Clock size={14} className="text-[#2563EB]" aria-hidden="true" />}
                 />
                 <Meta label="Daily Income" value={inr(row.dailyIncome)} />

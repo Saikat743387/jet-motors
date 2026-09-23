@@ -3,7 +3,7 @@ import { Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import StatusBadge from './StatusBadge';
-import { assetUrl, formatDate, inr } from '../utils/format';
+import { assetUrl, durationLabel, formatDate, inr } from '../utils/format';
 
 export default function PurchasedPlanCard({ row, onClaimed }) {
   const [busy, setBusy] = useState(false);
@@ -38,7 +38,7 @@ export default function PurchasedPlanCard({ row, onClaimed }) {
       <div className="grid grid-cols-2 gap-3 border-t border-line px-4 py-4 text-sm">
         <Meta
           label="Duration"
-          value={`${row.durationDays} Days`}
+          value={durationLabel(row)}
           valueClassName="text-[#15803D]"
           icon={<Clock size={14} className="text-[#2563EB]" aria-hidden="true" />}
         />

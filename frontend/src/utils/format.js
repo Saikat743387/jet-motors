@@ -3,6 +3,12 @@ export function inr(value) {
   return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+export function durationLabel(item) {
+  const name = item?.name ?? item?.productName ?? '';
+  if (name === 'Plan 1') return '30 min';
+  return `${Number(item?.durationDays ?? 0)} Days`;
+}
+
 export function formatDate(value) {
   if (!value) return '—';
   return new Date(value).toLocaleDateString('en-IN', {

@@ -4,7 +4,7 @@ import { Clock, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { inr } from '../utils/format';
+import { durationLabel, inr } from '../utils/format';
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ export default function ProductCard({ product }) {
         <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
           <Meta
             label="Duration"
-            value={`${product.durationDays} Days`}
+            value={durationLabel(product)}
             valueClassName="text-[#15803D]"
             icon={<Clock size={14} className="text-[#2563EB]" aria-hidden="true" />}
           />
