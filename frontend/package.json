@@ -6,7 +6,7 @@
 "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "node -e \"const fs=require('fs');const cp=require('child_process');cp.execSync('cp -r dist ..');\"",
+    "postbuild": "node -e \"require('child_process').execSync('cp -r dist ..')\"",
     "preview": "vite preview"
   },
   "dependencies": {
