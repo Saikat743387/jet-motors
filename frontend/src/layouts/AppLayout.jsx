@@ -1,6 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import { Home, LayoutGrid, Users, UserRound } from 'lucide-react';
-import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 
 const side = [
@@ -13,9 +12,8 @@ const side = [
 export default function AppLayout() {
   return (
     <div className="min-h-screen bg-ivory">
-      <Header />
       <div className="mx-auto flex max-w-5xl">
-        <aside className="sticky top-[73px] hidden h-[calc(100vh-73px)] w-52 shrink-0 border-r border-line p-4 md:block">
+        <aside className="sticky top-0 hidden h-screen w-52 shrink-0 border-r border-line p-4 md:block">
           <nav className="space-y-1">
             {side.map((item) => {
               const Icon = item.icon;
